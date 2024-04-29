@@ -1,0 +1,54 @@
+\hypertarget{mf_c_g_8c}{}\doxysection{mf\+CG.\+c File Reference}
+\label{mf_c_g_8c}\index{mfCG.c@{mfCG.c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$omp.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{mf_c_g_8c_af641adc494e8f054ce0d00e2910be8e1}{fun}} (double x, double y)
+\item 
+double \mbox{\hyperlink{mf_c_g_8c_a287ab111a7a8e778cd13e036ceda75da}{dot}} (double v\mbox{[}$\,$\mbox{]}, double w\mbox{[}$\,$\mbox{]}, int size)
+\item 
+void \mbox{\hyperlink{mf_c_g_8c_afe48d14ce55296eec85ed172fce1dfbe}{mf\+Mult}} (int N, double r\mbox{[}$\,$\mbox{]}, double y\mbox{[}$\,$\mbox{]}, double h)
+\item 
+void \mbox{\hyperlink{mf_c_g_8c_a6469c9eb9dbc2ab59802829475623a64}{vec\+\_\+print}} (int N, double vec\mbox{[}$\,$\mbox{]}, char name\mbox{[}$\,$\mbox{]})
+\item 
+int \mbox{\hyperlink{mf_c_g_8c_a3c04138a5bfe5d72780bb7e82a18e627}{main}} (int argc, char $\ast$$\ast$argv)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{mf_c_g_8c_a287ab111a7a8e778cd13e036ceda75da}\label{mf_c_g_8c_a287ab111a7a8e778cd13e036ceda75da}} 
+\index{mfCG.c@{mfCG.c}!dot@{dot}}
+\index{dot@{dot}!mfCG.c@{mfCG.c}}
+\doxysubsubsection{\texorpdfstring{dot()}{dot()}}
+{\footnotesize\ttfamily double dot (\begin{DoxyParamCaption}\item[{double}]{v\mbox{[}$\,$\mbox{]},  }\item[{double}]{w\mbox{[}$\,$\mbox{]},  }\item[{int}]{size }\end{DoxyParamCaption})}
+
+Calculating the dot (scalar) product of 2 vectors \mbox{\Hypertarget{mf_c_g_8c_af641adc494e8f054ce0d00e2910be8e1}\label{mf_c_g_8c_af641adc494e8f054ce0d00e2910be8e1}} 
+\index{mfCG.c@{mfCG.c}!fun@{fun}}
+\index{fun@{fun}!mfCG.c@{mfCG.c}}
+\doxysubsubsection{\texorpdfstring{fun()}{fun()}}
+{\footnotesize\ttfamily double fun (\begin{DoxyParamCaption}\item[{double}]{x,  }\item[{double}]{y }\end{DoxyParamCaption})}
+
+The function f of the exercise sheet \mbox{\Hypertarget{mf_c_g_8c_a3c04138a5bfe5d72780bb7e82a18e627}\label{mf_c_g_8c_a3c04138a5bfe5d72780bb7e82a18e627}} 
+\index{mfCG.c@{mfCG.c}!main@{main}}
+\index{main@{main}!mfCG.c@{mfCG.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$$\ast$}]{argv }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{mf_c_g_8c_afe48d14ce55296eec85ed172fce1dfbe}\label{mf_c_g_8c_afe48d14ce55296eec85ed172fce1dfbe}} 
+\index{mfCG.c@{mfCG.c}!mfMult@{mfMult}}
+\index{mfMult@{mfMult}!mfCG.c@{mfCG.c}}
+\doxysubsubsection{\texorpdfstring{mfMult()}{mfMult()}}
+{\footnotesize\ttfamily void mf\+Mult (\begin{DoxyParamCaption}\item[{int}]{N,  }\item[{double}]{r\mbox{[}$\,$\mbox{]},  }\item[{double}]{y\mbox{[}$\,$\mbox{]},  }\item[{double}]{h }\end{DoxyParamCaption})}
+
+Implementation of a matrix free multiplication with 5-\/star stencil \mbox{\Hypertarget{mf_c_g_8c_a6469c9eb9dbc2ab59802829475623a64}\label{mf_c_g_8c_a6469c9eb9dbc2ab59802829475623a64}} 
+\index{mfCG.c@{mfCG.c}!vec\_print@{vec\_print}}
+\index{vec\_print@{vec\_print}!mfCG.c@{mfCG.c}}
+\doxysubsubsection{\texorpdfstring{vec\_print()}{vec\_print()}}
+{\footnotesize\ttfamily void vec\+\_\+print (\begin{DoxyParamCaption}\item[{int}]{N,  }\item[{double}]{vec\mbox{[}$\,$\mbox{]},  }\item[{char}]{name\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+Displaying a vector 
