@@ -22,6 +22,7 @@ double dot(double v[], double w[], int size) {
     return sum;
 }
 
+/*! Implementation of a matrix free multiplication with 5-star stencil*/
 void mfMult(int N, double r[], double y[], double h){
     for (int i=1;i<N+1;i++){
         for (int j=1;j<N+1;j++){
@@ -31,6 +32,7 @@ void mfMult(int N, double r[], double y[], double h){
     }
 }
 
+/*! Displaying a vector */
 void vec_print(int N, double vec[], char name[]){
     printf("\n %s \n",name);
     for (int i=0;i<N+2;i++){
@@ -42,9 +44,7 @@ void vec_print(int N, double vec[], char name[]){
     printf("\n");
 }
 
-void mfCG(){
 
-}
 
 int main(int argc, char** argv){
     // initilize variables
@@ -85,25 +85,33 @@ int main(int argc, char** argv){
 
     // Calculate r_0
     mfMult(N,x,r,h);
+    #pragma omp parallel for
     for (int i=0;i<(N+2)*(N+2);i++){
         r[i]-=b[i];
         p[i]=r[i]*(-1);
     }
     err0 = sqrt(dot(r,r,N2));
 
-    //loop
-    mfMult(N,p,m,h);
-    double dot_rk_rk = dot(r,r,N2);
-    alpha=dot_rk_rk/dot(p,m,N2);
+    do
+    {
+        mfMult(N,p,m,h);
+        double dot_rk_rk = dot(r,r,N2);
+        alpha=dot_rk_rk/dot(p,m,N2);
 
-    vec_print(N,x,"vector x");
-    // update x,r
-    for (int i=0;i<(N+2)*(N+2);i++){
-        x[i]+=alpha*p[i];
-        r[i]+=alpha*m[i];
-    }
-    //update p
-    beta = dot(r,r,N2)/dot_rk_rk;
+        // update x,r
+        #pragma omp parallel for
+        for (int i=0;i<(N+2)*(N+2);i++){
+            x[i]+=alpha*p[i];
+            r[i]+=alpha*m[i];
+        }
+        //update p
+        beta = dot(r,r,N2)/dot_rk_rk;
+        #pragma omp parallel for
+        for (int i=0;i<(N+2)*(N+2);i++){
+            p[i]=-r[i]+beta*p[i];
+        }
+
+    } while (sqrt(dot(r,r,N2))/err0 >= epsilon);
 
     vec_print(N,x,"vector x");
 
