@@ -1,0 +1,5 @@
+.vscode 
+*.exe
+latex 
+html
+doxygen_config
