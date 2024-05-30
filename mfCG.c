@@ -62,12 +62,23 @@ int main(int argc, char** argv){
     double beta=0;
     double err0;
     double *x,*p,*r,*b,*m;
-    x=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    p=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    r=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    b=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    m=(double *)malloc((N+2)*(N+2)*sizeof(double));
-   
+
+    x=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(x,vec_size_ghost);
+    rand_vec(x,N); // random start vector x_0 
+
+    p=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(p,vec_size_ghost);
+
+    r=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(r,vec_size_ghost);
+
+    b=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(b,vec_size_ghost);
+
+    m=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(m,vec_size_ghost);
+
     // fill ghost layer with zeros (and everything else also 0)
     for (int i = 0;i<N+2;i++) {
         for (int j = 0;j<N+2;j++){
