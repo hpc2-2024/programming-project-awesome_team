@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include "utils.h"
-#include "ilu.h"
+#include "preconditioner.h"
 
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){
