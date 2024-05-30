@@ -77,9 +77,8 @@ void backward_solve(double a[][5],double x[],double y[],int N){
     }
 }
 
-/*
-    TB: I added this very simple preconditioner that is nothing else than the inverse of the diagonal.
-    You can use it when you have to debug the code, it can help in detecting where are eventually errors.
+/*!
+Jacobi preconditioner 
 */
 void inv_diag(double y[], double b[], int N){
     for (int i=1;i<N+1;i++){
@@ -89,11 +88,54 @@ void inv_diag(double y[], double b[], int N){
     }
 }
 
-void precondition_ilu(double a[][5],double x[],double y[],double b[],int N){
-    // forward solve
-    forward_solve(a,y,b,N);
-    
-    //backward solve
-    backward_solve(a,x,y,N);
+/*!
 
+!!! Probably some index error in here !!!
+
+Gaus-Seidel preconditioner
+*/
+void gs_precon(double z[], double lplusd[][5], double r[], int N){
+    for (int i=1;i<N+1;i++){
+        for (int j=1;j<N+1;j++){
+            z[i*(N+2)+j]=(r[i*(N+2)+j]-lplusd[(i-1)*N+j-1][0]*z[(i-1)*(N+2)+j]-lplusd[conv_idx(i,j,N)][1]*z[i*(N+2)+j-1])/4;
+        }
+    }
+}
+
+/*! 
+ILU(0) preconditioner
+params: 
+        a[][5] lu decomposition of matrix of poisson equation
+        r[] vector we solve for
+        temp[] temporary vector we use as Ux (Ax = LUx = Ly =  b)
+        z[] right hand side 
+        N is the grid size
+solution is overwriten in z
+*/
+void apply_precon(double a[][5],double r[],double temp[],double z[],int N, int preconditioner){
+    if (preconditioner==1) {
+        forward_solve(a,temp,r,N); // L* temp = r   
+        backward_solve(a,z,temp,N); // Uz = temp
+    }
+    else if (preconditioner==2){
+        inv_diag(z,r,N);
+    }
+    else if (preconditioner==3){
+        gs_precon(z,a,r,N);
+    }
+}
+
+void init_preconditioner(double a[][5], double r[], double temp[], double z[], int N, int preconditioner){
+    if (preconditioner == 1){
+        lapl_matrix(a,N);
+        ilu(a,N,0.001,100);
+        apply_precon(a,r,temp,z,N,preconditioner);
+    }
+    else if (preconditioner == 2){
+        inv_diag(z,r,N);
+    }
+    else if (preconditioner == 3){
+        lapl_matrix(a,N);
+        gs_precon(z,a,r,N);
+    }
 }

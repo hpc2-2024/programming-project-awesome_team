@@ -14,6 +14,30 @@ double dot(double v[], double w[], int size) {
     return sum;
 }
 
+/*! fills array with zeros */
+void null_vec(double array[], int arrSize){
+    for (int i=0;i<arrSize;i++){
+        array[i]=0;
+    }
+}
+
+/*! 
+fills array with ghostlayer with random numbers in (0,1) intervall
+the borders will be kept 0
+*/
+void rand_vec(double x[], int N){
+    int seed = 123456;
+    for (int i = 1;i<N+1;i++) {
+        for (int j = 1;j<N+1;j++){
+            // randomly initialize x with values in (0,1)
+            srand(seed + i);
+            double r = (double)rand() / (double)RAND_MAX;
+            x[(N+2)*i+j]=r;
+        }
+
+    }
+}
+
 /*! Displaying a vector with ghostlayer*/
 void vec_print(int N, double vec[], char name[]){
     printf("\n %s \n",name);

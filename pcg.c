@@ -17,38 +17,59 @@ double fun_solution(double x, double y){
     return sin(x*M_PI)*sin(y*M_PI);
 }
 
-/*! Implementation of a matrix free multiplication with 5-star stencil*/
-void mfMult(int N, double r[], double y[]){
-    for (int i=1;i<N+1;i++){
-        for (int j=1;j<N+1;j++){
-            y[(N+2)*i+j]=4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1];
-            //y[(N+2)*i+j]=1.0/(h*h)*y[(N+2)*i+j]; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
+void init_b(double b[],int N){
+    double h = 1.0/(N+1);
+    // inner points of x_0,b
+    for (int i = 1;i<N+1;i++) {
+        for (int j = 1;j<N+1;j++){
+            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
         }
     }
 }
 
-void apply_precon(double a[][5],double r[],double temp[],double z[],int N){
-    forward_solve(a,temp,r,N);
-    backward_solve(a,z,temp,N);
-
-    // inv_diag(z,r,N); TB: if you want you can try the simplest preconditioner (inverse of diagonal, can be useful in debug)
+double delta_rel(double x[], int N){
+    double h = 1.0/(N+1);
+    double abs_diff = 0.0;
+    double abs_sol = 0.0;
+    for (int i = 1;i<N+1;i++) {
+        for (int j = 1;j<N+1;j++){
+            double x_sol = fun_solution(i*h,j*h);
+            abs_diff += fabs(x[(N+2)*i+j] - x_sol);
+            abs_sol += x_sol;
+        }
+    }
+    return (abs_diff/abs_sol);
 }
 
-void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double temp[], double z[], double p[], double Ap[], int preconditioner, double epsilon){
+/*! Implementation of a matrix free multiplication with 5-star stencil
+If A is the Laplace Matrix then we compute y=Ar
+params:
+    N: N*N is the size of the grid 
+    r[]: right hand side vector with ghost layer (=> (N+2)x(N+2) vector )
+    y[]: the solution vector of our matrix multiplication with ghost layer (=> (N+2)x(N+2) vector )
+
+ */
+void mfMult(int N, double r[], double y[]){
+    for (int i=1;i<N+1;i++){
+        for (int j=1;j<N+1;j++){
+            y[(N+2)*i+j]=4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1];
+        }
+    }
+}
+
+/*! PCG method */
+void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double temp[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
     double N2 = (N+2)*(N+2);
 
-    lapl_matrix(a,N);
-    ilu(a,N,0.001,100);
     // Pre loop calculations ( calculating residuum )
     mfMult(N,x,r); // r = Ax
     axpy(r,-1,b,r,(N+2)*(N+2)); // r = Ax -b (together with last line)
-    if (preconditioner == 1) {
-        //precondition z = M^-1r
-        apply_precon(a,r,temp,z,N);
+    
+    if (preconditioner==0){
+        z=r;
     }
-    else {
-        z = r; // no preconditioning of the residuum
-    }
+    init_preconditioner(a,r,temp,z,N,preconditioner);
+
     axpy(p,-1,z,0,(N+2)*(N+2)); // p = -r (first conjugated gradient direction)
 
     double old_r_dot, new_r_dot;
@@ -69,13 +90,9 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
         axpy(x,alpha,p,x,N2); //x = x + alpha*p
         axpy(r,alpha,Ap,r,N2); // r=r + alpha*Ap
 
-        if (preconditioner==1) {
-            // precondition r: z = Mr
-            apply_precon(a,r,temp,z,N);
-        }
-        else {      
-            z = r; 
-        }           
+        
+        // precondition r: z = M^-1*r
+        apply_precon(a,r,temp,z,N,preconditioner);
 
         //update p
         new_r_dot = dot(r,z,N2);    // TB :need dot(r,z,N2) instaed of dot(r,r,N2)! 
@@ -91,87 +108,82 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
         else {
             err_k=sqrt(dot(z,z,N2));
         }
-        printf("residual it %d: %f \n",number_of_iterations,err_k); // TB: sometimes printing the residual is useful for the debug, you can monitor the convergence (can be commented)
+        if (debug==1) {
+            printf("residual it %d: %f \n",number_of_iterations,err_k); // TB: sometimes printing the residual is useful for the debug, you can monitor the convergence (can be commented)
+        }
+
     } while (err_k >= epsilon && number_of_iterations <= it_max);   // TB: Better add a maximum number for the cg iteraions 
 
     //vec_print(N,x,"vector x"); // TB: I commented this print, use it only when you need it 
     printf("Number of iterations: %d\n",number_of_iterations);
 
-    
 }
 
 int main(int argc, char** argv){
+
     int preconditioner=0;
-    int number_of_iterations = 0;
-    int it_Max = 1000; // TB: add a maximum for the cg iterations
-    // if you want to use a precondtioner first argument 1
-    if (argc>1){
+    int N = 50; // N^2 is the number of inner points in our lattice
+    int debug = 1; // option for printing infos of pcg (residual at each iteration)
+    // Options when running code
+    if (argc>1){ // preconditioner
         preconditioner=atoi(argv[1]);
     }
-    printf("Preconditioner: %d \n",preconditioner);
+    if (argc>2){ // gridsize N
+        N = atoi(argv[2]);
+    }
+    if (N>100){
+        debug = 0;
+    }
+
     // initilize variables
-    int N = 50; // N^2 is the number of inner points in our lattice
-    int N2 = (N+2)*(N+2);
-    double epsilon = 1e-3;
     double h = 1.0/(N+1);
-    // init x0
-    double alpha = 0;
-    double beta=0;
-    double err0, errk;
+
+    int N2 = (N+2)*(N+2);
+    int vec_size_ghost = (N+2)*(N+2);
+
+    double epsilon = 1e-3;
+
     double *x,*p,*r,*b,*m, *z,*temp;
-    x=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    z=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    p=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    r=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    b=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    m=(double *)malloc((N+2)*(N+2)*sizeof(double));
-    temp=(double *)malloc((N+2)*(N+2)*sizeof(double));
+
+    x=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(x,vec_size_ghost);
+    rand_vec(x,N); // random start vector x_0 
+
+    z=(double *)malloc(vec_size_ghost*sizeof(double));
+
+    p=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(p,vec_size_ghost);
+
+    r=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(r,vec_size_ghost);
+
+    b=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(b,vec_size_ghost);
+    init_b(b,N);
+
+    m=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(m,vec_size_ghost);
+
+    temp=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(temp,vec_size_ghost);
 
     // Creation of matrix a
     double a[N*N][5];
     
-
-    //print_2dim(N, a,"mat ilu0");
-
-    // fill ghost layer with zeros (and everything else also 0)
-    for (int i = 0;i<N+2;i++) {
-        for (int j = 0;j<N+2;j++){
-            x[(N+2)*i+j]=0;
-            p[(N+2)*i+j]=0;
-            r[(N+2)*i+j]=0;
-            b[(N+2)*i+j]=0;
-            m[(N+2)*i+j]=0;
-        }
-
-    }
-
-    int seed = 123456;
-    // inner points of x_0,b
-    for (int i = 1;i<N+1;i++) {
-        for (int j = 1;j<N+1;j++){
-            // randomly initialize x with values in (0,1)
-            srand(seed + i);
-            double r = (double)rand() / (double)RAND_MAX;
-            x[(N+2)*i+j]=r;
-
-            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
-        }
-
-    }
-
-    pcg_solve(a,N,x,r,b,temp,z,p,m,preconditioner,epsilon);
+    // PCG solve
+    pcg_solve(a,N,x,r,b,temp,z,p,m,preconditioner,epsilon,debug);
 
     // Compute the relative absolute difference 
-    double abs_diff = 0.0;
-    double abs_sol = 0.0;
-    for (int i = 1;i<N+1;i++) {
-        for (int j = 1;j<N+1;j++){
-            double x_sol = fun_solution(i*h,j*h);
-            abs_diff += fabs(x[(N+2)*i+j] - x_sol);
-            abs_sol += x_sol;
-        }
-    }
-    printf("Relative absolute difference between exact and approx. solution: %f%%\n", 100.0 * abs_diff / abs_sol);
+    double rel_dif = delta_rel(x,N); 
+
+    // Output
+    printf("\nSetup of cg:\n");
+    printf("size of grid: N = %d\n",N);
+    printf("Preconditioner: %d \n",preconditioner);
+    printf("break condition of cg loop: epsilon= %f\n", epsilon);
+    printf("\n");
+
+    printf("Relative absolute difference between exact and approx. solution: %f%%\n", 100.0 * rel_dif);
 
     // free allocated memory
     free(x);
