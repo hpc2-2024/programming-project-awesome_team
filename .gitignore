@@ -3,3 +3,4 @@
 latex 
 html
 doxygen_config
+*.pdf
