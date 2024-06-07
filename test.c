@@ -28,13 +28,14 @@ void test_prolongation(){
 
     double expected_u[] = {
         0,0,0,0,0,
-        0,1,1,1,0,
-        0,1,4,1,0,
-        0,1,1,1,0,
+        0,1,2,1,0,
+        0,2,4,2,0,
+        0,1,2,1,0,
         0,0,0,0,0
     };
 
     prolongation(u_2h,N_2h,u_h,N_h);
+    //vec_print(N_h,u_h,"u_h prolongation");
 
     int fail = 0;
     for (int i = 0;i<25;i++){

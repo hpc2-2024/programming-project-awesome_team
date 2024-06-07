@@ -39,10 +39,37 @@ void restriction(double *fine_grid, int N, double *coarse_grid, int M){
     }
 }
 
+// N x N is the dimension of the coarse grid
+void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
+    N+=2;
+    M+=2;
+    // only iterate over the inner points and interpolate them from the coarse grid
+    for(int i = 1; i<M-1; i++){
+        for(int j=1; j<M-1; j++){
+            int k = i/2;
+            int l = j/2;
+            if(i%2 == 0 && j%2==0){
+                fine_grid[i * M + j] = coarse_grid[k * N + l];
+            }
+            else if(i%2 == 1 && j%2==0){
+                fine_grid[i * M + j] = 0.5 * coarse_grid[k * N + l] + 0.5 * coarse_grid[(k+1) * N + l];
 
-void prolongation(double u_small[],int N1, double u[], int N2){
+            }
+            else if(i%2 == 0 && j%2==1){
+                fine_grid[i * M + j] = 0.5 * coarse_grid[k * N + l] + 0.5 * coarse_grid[k * N + (l+1)];
 
+            }
+            else if(i%2 == 1 && j%2==1){
+                fine_grid[i * M + j] =    0.25 * coarse_grid[k * N + l] 
+                                        + 0.25 * coarse_grid[(k+1) * N + l]
+                                        + 0.25 * coarse_grid[k * N + (l+1)]
+                                        + 0.25 * coarse_grid[(k+1) * N + (l+1)];
+
+            }
+        }
+    }
 }
+
 
 void exact_solve(double u[],double f[], int N){
 
@@ -80,10 +107,10 @@ void v_cycle(double** u, double **f, int N, int levels){
 
     for (int l=1;l<levels;l++){
         int Nlevel_smaller = Nlevel;
-        int Nlevel = dim_finer(Nlevel);
+        Nlevel = dim_finer(Nlevel);
 
         // prolongate
-        prolongation(u[l-1],Nlevel,u[l],Nlevel_smaller);
+        prolongation(u[l-1],Nlevel_smaller,u[l],Nlevel);
         // Smoothing
         smooth(u[l],f[l],Nlevel,v);
 
