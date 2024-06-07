@@ -11,11 +11,11 @@ void smooth(double u[], double f[], int N, int v){
 
 }
 
-void restriction(double r[],double f[], int N){
+void restriction(double r[],int N_r, double f[], int N_f){
 
 }
 
-void prolangation(double u[],double u_small[],int N1, int N2){
+void prolongation(double u_small[],int N1, double u[], int N2){
 
 }
 
@@ -42,9 +42,9 @@ void v_cycle(double** u, double **f, int N, int levels){
         axpy(r, -1, r, f[l],vec_size);
 
         // restriction
-        restriction(r,f[l-1],Nlevel);
+        int N_f = 10000000; // TODOOOOOOOOOOOO
+        restriction(r,Nlevel, f[l-1],N_f);
 
-        // simple restriction -> nothing to do here
         free(r);
     }
 
@@ -55,7 +55,7 @@ void v_cycle(double** u, double **f, int N, int levels){
         int Nlevel = N/pow(2,levels-1-l);
         int Nlevel2 = N/pow(2,levels-1-(l-1));
         // prolongate
-        prolangation(u[l],u[l-1],Nlevel,Nlevel2);
+        prolongation(u[l-1],Nlevel,u[l],Nlevel2);
         // Smoothing
         smooth(u[l],f[l],N,v);
 
