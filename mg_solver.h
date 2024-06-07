@@ -12,14 +12,15 @@ void smooth(double u[], double f[], int N, int v){
 }
 
 /*! 
-    N*N is the dimension of the finde grid
+    N*N is the dimension of the fine grid
     (N+2)*(N+2) is the dimension of the vector with ghost layer 
     
     M*M is the dimension of the coarse grid
-    M^2 is the dimension of the vector
+    (M+2)^2 is the dimension of the vector
 */
 void restriction(double *fine_grid, int N, double *coarse_grid, int M){
-    int M = (N-2)/2 + 2;
+    M=M+2;
+    N=N+2;
 
     for(int i = 1; i<M-1; i++){
         for(int j = 1; j<M-1; j++){
@@ -31,9 +32,6 @@ void restriction(double *fine_grid, int N, double *coarse_grid, int M){
     }
 }
 
-void restriction(double r[],int N_r, double f[], int N_f){
-
-}
 
 void prolongation(double u_small[],int N1, double u[], int N2){
 

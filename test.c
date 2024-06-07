@@ -56,7 +56,7 @@ void test_restriction(){
     printf("Testing  restriction - START \n");
     double expected_u[] = {
         0,0,0,
-        0,4,0,
+        0,2.5,0,
         0,0,0   };
     int N_2h=1;
 
