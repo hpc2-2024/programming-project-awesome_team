@@ -70,6 +70,43 @@ void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
     }
 }
 
+// Simple Gaussian elimination solver for dense systems
+void gaussian_elimination(double A[], double b[], double x[], int N) {
+    int i, j, k;
+    for (i = 0; i < n; i++) {
+        // Pivoting
+        for (k = i + 1; k < n; k++) {
+            if (fabs(A[k * n + i]) > fabs(A[i * n + i])) {
+                for (j = 0; j < n; j++) {
+                    double temp = A[i * n + j];
+                    A[i * n + j] = A[k * n + j];
+                    A[k * n + j] = temp;
+                }
+                double temp = b[i];
+                b[i] = b[k];
+                b[k] = temp;
+            }
+        }
+
+        // Elimination
+        for (k = i + 1; k < n; k++) {
+            double t = A[k * n + i] / A[i * n + i];
+            for (j = 0; j < n; j++) {
+                A[k * n + j] -= t * A[i * n + j];
+            }
+            b[k] -= t * b[i];
+        }
+    }
+
+    // Back substitution
+    for (i = n - 1; i >= 0; i--) {
+        x[i] = b[i];
+        for (j = i + 1; j < n; j++) {
+            x[i] -= A[i * n + j] * x[j];
+        }
+        x[i] /= A[i * n + i];
+    }
+}
 
 void exact_solve(double u[],double f[], int N){
 
