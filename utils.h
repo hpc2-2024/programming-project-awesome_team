@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 /*! Calculating the dot (scalar) product of 2 vectors */
 double dot(double v[], double w[], int size) {
@@ -12,6 +14,29 @@ double dot(double v[], double w[], int size) {
     } 
 
     return sum;
+}
+
+/*! Implementation of a matrix free multiplication with 5-star stencil
+If A is the Laplace Matrix then we compute y=Ar
+params:
+    N: N*N is the size of the grid 
+    r[]: right hand side vector with ghost layer (=> (N+2)x(N+2) vector )
+    y[]: the solution vector of our matrix multiplication with ghost layer (=> (N+2)x(N+2) vector )
+
+ */
+void mfMult(int N, double r[], double y[]){
+    for (int i=1;i<N+1;i++){
+        for (int j=1;j<N+1;j++){
+            y[(N+2)*i+j]=4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1];
+        }
+    }
+}
+
+/*! Euclidean norm of a vector */
+double norm(double arr[], int arrSize){
+    double sol;
+    sol = dot(arr,arr, arrSize);
+    return sqrt(sol);
 }
 
 /*! fills array with zeros */

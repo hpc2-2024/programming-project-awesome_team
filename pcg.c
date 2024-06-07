@@ -41,21 +41,7 @@ double delta_rel(double x[], int N){
     return (abs_diff/abs_sol);
 }
 
-/*! Implementation of a matrix free multiplication with 5-star stencil
-If A is the Laplace Matrix then we compute y=Ar
-params:
-    N: N*N is the size of the grid 
-    r[]: right hand side vector with ghost layer (=> (N+2)x(N+2) vector )
-    y[]: the solution vector of our matrix multiplication with ghost layer (=> (N+2)x(N+2) vector )
 
- */
-void mfMult(int N, double r[], double y[]){
-    for (int i=1;i<N+1;i++){
-        for (int j=1;j<N+1;j++){
-            y[(N+2)*i+j]=4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1];
-        }
-    }
-}
 
 /*! PCG method */
 void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double temp[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
