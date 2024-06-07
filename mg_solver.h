@@ -11,6 +11,26 @@ void smooth(double u[], double f[], int N, int v){
 
 }
 
+/*! 
+    N*N is the dimension of the finde grid
+    (N+2)*(N+2) is the dimension of the vector with ghost layer 
+    
+    M*M is the dimension of the coarse grid
+    M^2 is the dimension of the vector
+*/
+void restriction(double *fine_grid, int N, double *coarse_grid, int M){
+    int M = (N-2)/2 + 2;
+
+    for(int i = 1; i<M-1; i++){
+        for(int j = 1; j<M-1; j++){
+            int k = 2*i;
+            int l = 2*j;
+
+            coarse_grid[i * M + j] = 0.125  * (fine_grid[(k+1) * N + l] + fine_grid[(k-1) * N + l] + fine_grid[k * N + (l-1)] + fine_grid[k * N + (l+1)]) + 0.5 * fine_grid[k * N + l];
+        }
+    }
+}
+
 void restriction(double r[],int N_r, double f[], int N_f){
 
 }
