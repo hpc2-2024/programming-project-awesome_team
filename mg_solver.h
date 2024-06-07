@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int dim_finer(int N){
+    return N*2 + 1;
+}
+
+int dim_coarser(int N){
+    return (N-1)/2;
+}
 
 // smoothing of u
 void smooth(double u[], double f[], int N, int v){
@@ -46,8 +53,9 @@ void v_cycle(double** u, double **f, int N, int levels){
     int vec_size;
     int v = 2;//number of smoothing iterations
     
+    int Nlevel= N;
     for (int l=levels-1;l>=1;l--){
-        int Nlevel = N/pow(2,levels-1-l);
+        // number of points in the grid (without border)
         vec_size = (2+Nlevel)*(Nlevel+2);
 
         double *r;
@@ -60,22 +68,24 @@ void v_cycle(double** u, double **f, int N, int levels){
         axpy(r, -1, r, f[l],vec_size);
 
         // restriction
-        int N_f = 10000000; // TODOOOOOOOOOOOO
+        int N_f = dim_coarser(Nlevel); 
         restriction(r,Nlevel, f[l-1],N_f);
+        Nlevel=N_f;
 
         free(r);
     }
 
     // exact solve
-    exact_solve(u[0],f[0],N/pow(2,levels-1));
+    exact_solve(u[0],f[0],Nlevel);
 
     for (int l=1;l<levels;l++){
-        int Nlevel = N/pow(2,levels-1-l);
-        int Nlevel2 = N/pow(2,levels-1-(l-1));
+        int Nlevel_smaller = Nlevel;
+        int Nlevel = dim_finer(Nlevel);
+
         // prolongate
-        prolongation(u[l-1],Nlevel,u[l],Nlevel2);
+        prolongation(u[l-1],Nlevel,u[l],Nlevel_smaller);
         // Smoothing
-        smooth(u[l],f[l],N,v);
+        smooth(u[l],f[l],Nlevel,v);
 
     }
 }
