@@ -26,15 +26,15 @@ void init_b(double b[],int N){
 
 int main (int argc, char** argv){
     // Variables init
-    int N=10;
+    int N=11;
     int levels=2;
 
     if (argc>2){ // optional gridsize N and number of levels 
         N = atoi(argv[1]);
         levels = atoi(argv[2]);
         int k = pow(2,levels-1);
-        if (N%k!=0){
-            printf("N has to be divisible by 2^(levels-1) for the program to run, please chose different N and or levels\n");
+        if ((N-k-1)%k!=0){
+            printf("(N - 2^(levels-1) -1)/2^(levels-1) has to be an integer (since this is the number of points in the coarsest grid)");
             exit(0);
         }
     }
@@ -44,20 +44,23 @@ int main (int argc, char** argv){
     // init u (the vector we are solving for)
     double** u;
     u = (double**)malloc(levels*sizeof(double*));
-    for (int i=0;i<levels;i++){
-        int Nlevel = N/pow(2,levels-1-i)+2;
-        u[i]=(double*)malloc( pow( Nlevel , 2) * sizeof(double) );
-        null_vec(u[i], pow( Nlevel , 2));
+    int Nlevel = N;
+    for (int i=levels-1;i>=0;i--){
+        u[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
+        null_vec(u[i], pow( Nlevel+2 , 2));
+        Nlevel=dim_coarser(Nlevel);
     }
+
     rand_vec(u[levels-1],N);
 
     // init right hand side
     double **f;
     f = (double**)malloc(levels*sizeof(double*));
-    for (int i=0;i<levels;i++){
-        int Nlevel = N/pow(2,levels-1-i);
+    Nlevel = N;
+    for (int i=levels-1;i>=0;i--){
         f[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
         null_vec(f[i], pow( Nlevel+2 , 2));
+        Nlevel=dim_coarser(Nlevel);
     }
     init_b(f[levels-1],N);
 
