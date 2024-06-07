@@ -90,10 +90,35 @@ void test_restriction(){
     printf("Test restriction - END\n\n");
     
 }
+
+void test_gaussian_elemination(){
+    printf("Testing gaussian elemination - START \n");
+
+    //TC1
+    double A[] = {
+        1,2,
+        3,4
+    };
+    double u[2];
+    double f[] = {5,5};
+
+    gaussian_elimination(A,f,u,2);
+    print_1dim(2,u,"u gaussian TC1");  
+
+    double expected_u[]={-5,5};
+    if (u[0]!=expected_u[0] || u[1]!=expected_u[1]){
+        printf("TC1 failed\n");
+    }
+    else {
+        printf("TC1 successful\n");
+    }
+    printf("Testing gaussian elemination - END \n\n");
+}
 int main(){
     test_norm();
     test_prolongation();
     test_restriction();
+    test_gaussian_elemination();
 
     return 0;
 }

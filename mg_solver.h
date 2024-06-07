@@ -71,7 +71,7 @@ void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
 }
 
 // Simple Gaussian elimination solver for dense systems
-void gaussian_elimination(double A[], double b[], double x[], int N) {
+void gaussian_elimination(double A[], double b[], double x[], int n) {
     int i, j, k;
     for (i = 0; i < n; i++) {
         // Pivoting
@@ -108,8 +108,55 @@ void gaussian_elimination(double A[], double b[], double x[], int N) {
     }
 }
 
-void exact_solve(double u[],double f[], int N){
+// Function to solve the 2D Poisson problem with ghost layers
+void exact_solve(double u[], double f[], int N) {
+    int i, j, k;
+    int NN = N * N;
 
+    // Create matrix A (NN x NN) and vector b (NN)
+    double *A = (double *)malloc(NN * NN * sizeof(double));
+    double *b = (double *)malloc(NN * sizeof(double));
+    double *temp_u = (double *)malloc(NN * sizeof(double)); // Temporary array for solution
+    
+    // Initialize A to be the Laplacian matrix and b to be the right-hand side vector
+    for (i = 0; i < NN; i++) {
+        b[i] = 0.0;
+        for (j = 0; j < NN; j++) {
+            A[i * NN + j] = 0.0;
+        }
+    }
+
+    // Fill matrix A with the discretized Laplacian operator
+    for (i = 1; i <= N; i++) {
+        for (j = 1; j <= N; j++) {
+            int idx = (i-1) * N + (j-1);
+            b[idx] = f[i * (N + 2) + j];
+            A[idx * NN + idx] = 4.0;
+            if (i > 1) A[idx * NN + (idx - N)] = -1.0; // up
+            if (i < N) A[idx * NN + (idx + N)] = -1.0; // down
+            if (j > 1) A[idx * NN + (idx - 1)] = -1.0; // left
+            if (j < N) A[idx * NN + (idx + 1)] = -1.0; // right
+        }
+    }
+
+    // Use a simple Gaussian elimination method (or call an existing library function)
+    // to solve A * temp_u = b
+
+    // This is a placeholder for a solver function
+    gaussian_elimination(A, b, temp_u, NN);
+
+    // Map the solution back to the u array with ghost layers
+    for (i = 1; i <= N; i++) {
+        for (j = 1; j <= N; j++) {
+            int idx = (i-1) * N + (j-1);
+            u[i * (N + 2) + j] = temp_u[idx];
+        }
+    }
+
+    // Free allocated memory
+    free(A);
+    free(b);
+    free(temp_u);
 }
 
 void v_cycle(double** u, double **f, int N, int levels){
