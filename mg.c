@@ -26,7 +26,7 @@ void init_b(double b[],int N){
 
 int main (int argc, char** argv){
     // Variables init
-    int N=11;
+    int N=23;
     int levels=2;
 
     if (argc>2){ // optional gridsize N and number of levels 

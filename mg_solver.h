@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int dim_finer(int N){
     return N*2 + 1;
@@ -11,11 +12,6 @@ int dim_finer(int N){
 
 int dim_coarser(int N){
     return (N-1)/2;
-}
-
-// smoothing of u
-void smooth(double u[], double f[], int N, int v){
-
 }
 
 /*! 
@@ -192,12 +188,17 @@ void v_cycle(double** u, double **f, int N, int levels){
     for (int l=1;l<levels;l++){
         int Nlevel_smaller = Nlevel;
         Nlevel = dim_finer(Nlevel);
+        double *temp_u = (double *)malloc(pow(Nlevel+2,2) * sizeof(double));
+        null_vec(temp_u,pow(Nlevel+2,2));
 
         // prolongate
-        prolongation(u[l-1],Nlevel_smaller,u[l],Nlevel);
+        prolongation(u[l-1],Nlevel_smaller,temp_u,Nlevel);
+        // correction
+        axpy(u[l],1,u[l],temp_u,pow(Nlevel+2,2));
         // Smoothing
         smooth(u[l],f[l],Nlevel,v);
 
+        free(temp_u);
     }
 }
 
