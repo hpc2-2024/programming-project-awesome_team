@@ -49,16 +49,6 @@ int main (int argc, char** argv){
             exit(0);
         }
     }
-    else if (argc>3){
-        N = atoi(argv[1]);
-        levels = atoi(argv[2]);
-        v = atoi(argv[3]);
-        int k = pow(2,levels-1);
-        if ((N-k-1)%k!=0){
-            printf("(N - 2^(levels-1) -1)/2^(levels-1) has to be an integer (since this is the number of points in the coarsest grid)");
-            exit(0);
-        }
-    }
 
     int vec_ghost = (N+2)*(N+2); //vector size of smallest grid with ghost layer
 
