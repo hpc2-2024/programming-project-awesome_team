@@ -67,7 +67,7 @@ void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
 }
 
 // Function to perform Jacobi smoothing
-void smooth(double u[], double f[], int N, int v) {
+void smooth_jacobi(double u[], double f[], int N, int v) {
     int i, j, k;
     int N_with_ghosts = N + 2;
     double *u_new = (double *)malloc(N_with_ghosts * N_with_ghosts * sizeof(double));
@@ -94,6 +94,10 @@ void smooth(double u[], double f[], int N, int v) {
     }
 
     free(u_new);
+}
+
+void smooth(double u[], double f[], int N, int v) {
+    smooth_jacobi(u, f, N, v);
 }
 
 // Simple Gaussian elimination solver for dense systems
@@ -208,7 +212,7 @@ void v_cycle(double** u, double **f, int N, int levels,int v){
         restriction(r,Nlevel, f[l-1],N_f);
         Nlevel=N_f;
 
-        null_vec(u[l-1],Nlevel);
+        null_vec(u[l-1],(Nlevel + 2) * (Nlevel + 2));
 
         free(r);
     }
@@ -238,7 +242,7 @@ void v_cycle(double** u, double **f, int N, int levels,int v){
 void mg_solve(double** u, double **f, int N, int levels,int v){
     
     // setup
-    int it_max = 49;
+    int it_max = 99;
     int iterations = 0;
 
     double err;
@@ -246,20 +250,25 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
 
     int vec_size = (N+2)*(N+2);
 
-    double* r;
-    r=(double*)malloc(vec_size*sizeof(double));
+    double* r =(double*)malloc(vec_size*sizeof(double));
     null_vec(r,vec_size);
 
     
     do {
         iterations += 1;
 
-        // calculate new u with v cycle
-        v_cycle(u,f,N,levels,v);
+        // Perform a V-cycle to update the solution
+        v_cycle(u, f, N, levels, v);
+
+        int Nlevel = dim_coarser(N);
+        for (int i=levels-2;i>=0;i--){
+            null_vec(f[i], pow( Nlevel+2 , 2));
+            Nlevel=dim_coarser(Nlevel);
+        }
 
         // calculate new residual
-        mfMult(N,u[levels-1],r);
-        axpy(r,-1,r,f[levels-1],vec_size);
+        mfMult(N, u[levels - 1], r);
+        axpy(r, -1, r, f[levels - 1], vec_size);
 
         err = norm(r,vec_size);
         printf("Error: %f\n",err);
