@@ -1,4 +1,13 @@
-    
+#include <stdlib.h>
+#include <stdio.h>
+#include <omp.h>
+#include <math.h>
+#include <string.h>
+#include "utils.h"
+
+
+
+
     // // test prolongation and restriction
     // for(int i = 1; i<N; i++){
     //     for(int j = 1; j<N; j++){
