@@ -75,6 +75,18 @@ void vec_print(int N, double vec[], char name[]){
     printf("\n");
 }
 
+/*! Even better than vec_print */
+void amazing_vec_print(int N, double vec[], char name[]) {
+    printf("\n %s \n",name);
+    for (int i=0;i<N;i++){
+        for (int j=0;j<N;j++){
+            printf("%f ",vec[(N)*i+j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void print_1dim(int N, double vec[],char name[]){
     printf("\n %s \n",name);
     for (int i=0;i<N;i++){
