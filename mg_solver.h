@@ -68,7 +68,32 @@ void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
 
 // Function to perform Jacobi smoothing
 void smooth(double u[], double f[], int N, int v) {
+    int i, j, k;
+    int N_with_ghosts = N + 2;
+    double *u_new = (double *)malloc(N_with_ghosts * N_with_ghosts * sizeof(double));
 
+    // Jacobi iteration
+    for (k = 0; k < v; k++) {
+        // Copy u to u_new (needed for the Jacobi update)
+        memcpy(u_new, u, N_with_ghosts * N_with_ghosts * sizeof(double));
+
+        for (i = 1; i <= N; i++) {
+            for (j = 1; j <= N; j++) {
+                u_new[i * N_with_ghosts + j] = 0.25 * (
+                    u[(i-1) * N_with_ghosts + j] + // up
+                    u[(i+1) * N_with_ghosts + j] + // down
+                    u[i * N_with_ghosts + (j-1)] + // left
+                    u[i * N_with_ghosts + (j+1)]   // right
+                    + f[i * N_with_ghosts + j]     // source term
+                );
+            }
+        }
+
+        // Swap u and u_new for the next iteration
+        memcpy(u, u_new, N_with_ghosts * N_with_ghosts * sizeof(double));
+    }
+
+    free(u_new);
 }
 
 // Simple Gaussian elimination solver for dense systems
@@ -160,10 +185,9 @@ void exact_solve(double u[], double f[], int N) {
     free(temp_u);
 }
 
-void v_cycle(double** u, double **f, int N, int levels){
+void v_cycle(double** u, double **f, int N, int levels,int v){
     int vec_size_start = (N+2)*(N+2);
     int vec_size;
-    int v = 5;//number of smoothing iterations
     
     int Nlevel= N;
     for (int l=levels-1;l>=1;l--){
@@ -211,10 +235,10 @@ void v_cycle(double** u, double **f, int N, int levels){
 
 
 
-void mg_solve(double** u, double **f, int N, int levels){
+void mg_solve(double** u, double **f, int N, int levels,int v){
     
     // setup
-    int it_max = 100;
+    int it_max = 49;
     int iterations = 0;
 
     double err;
@@ -231,7 +255,7 @@ void mg_solve(double** u, double **f, int N, int levels){
         iterations += 1;
 
         // calculate new u with v cycle
-        v_cycle(u,f,N,levels);
+        v_cycle(u,f,N,levels,v);
 
         // calculate new residual
         mfMult(N,u[levels-1],r);
