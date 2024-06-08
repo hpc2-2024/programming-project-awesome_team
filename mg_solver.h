@@ -66,6 +66,11 @@ void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
     }
 }
 
+// Function to perform Jacobi smoothing
+void smooth(double u[], double f[], int N, int v) {
+
+}
+
 // Simple Gaussian elimination solver for dense systems
 void gaussian_elimination(double A[], double b[], double x[], int n) {
     int i, j, k;
@@ -158,7 +163,7 @@ void exact_solve(double u[], double f[], int N) {
 void v_cycle(double** u, double **f, int N, int levels){
     int vec_size_start = (N+2)*(N+2);
     int vec_size;
-    int v = 2;//number of smoothing iterations
+    int v = 5;//number of smoothing iterations
     
     int Nlevel= N;
     for (int l=levels-1;l>=1;l--){
@@ -171,13 +176,15 @@ void v_cycle(double** u, double **f, int N, int levels){
         smooth(u[l],f[l],Nlevel,v);
 
         // residual
-        mfMult(Nlevel,r,u[l]);
+        mfMult(Nlevel,u[l],r);
         axpy(r, -1, r, f[l],vec_size);
 
         // restriction
         int N_f = dim_coarser(Nlevel); 
         restriction(r,Nlevel, f[l-1],N_f);
         Nlevel=N_f;
+
+        null_vec(u[l-1],Nlevel);
 
         free(r);
     }
@@ -207,7 +214,7 @@ void v_cycle(double** u, double **f, int N, int levels){
 void mg_solve(double** u, double **f, int N, int levels){
     
     // setup
-    int it_max = 1000;
+    int it_max = 100;
     int iterations = 0;
 
     double err;
