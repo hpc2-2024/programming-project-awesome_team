@@ -28,8 +28,19 @@ int main (int argc, char** argv){
     // Variables init
     int N=23;
     int levels=2;
-
-    if (argc>2){ // optional gridsize N and number of levels 
+    int v=3;
+    
+    if (argc>3){
+        N = atoi(argv[1]);
+        levels = atoi(argv[2]);
+        v = atoi(argv[3]);
+        int k = pow(2,levels-1);
+        if ((N-k-1)%k!=0){
+            printf("(N - 2^(levels-1) -1)/2^(levels-1) has to be an integer (since this is the number of points in the coarsest grid)");
+            exit(0);
+        }
+    }
+    else if (argc>2){ // optional gridsize N and number of levels 
         N = atoi(argv[1]);
         levels = atoi(argv[2]);
         int k = pow(2,levels-1);
@@ -65,7 +76,7 @@ int main (int argc, char** argv){
     init_b(f[levels-1],N);
 
     
-    mg_solve(u,f,N,levels);
+    mg_solve(u,f,N,levels,v);
 
 
 
@@ -74,6 +85,7 @@ int main (int argc, char** argv){
     printf("\n");
     printf("Grid size, N = %d\n",N);
     printf("Number of grids, levels = %d\n",levels);
+    printf("Number of smoothing iterations, v = %d\n",v);
 
 
     //Speicherfregeben
