@@ -103,11 +103,6 @@ void solve_mf_gs(int N, double *B, double *X, double tolerance, int max_iter){
     free(X_new);
 }
 
-void get_index_i(int x, int N, int *i, int *j){
-    *j = x%N;
-    *i = (x - *j)/N;
-}
-
 // X1 is for regular Gauss-Seidel, X2 for matrix-free Gauss-Seidel
 void debug_gs(int N, double *A, double *B, double *X1, double *X2, double tolerance, int max_iter){
     int M = sqrt(N);
@@ -199,8 +194,7 @@ void get_stencil(int N2, double *A){
     }
 }
 
-int main(int argc, char **argv){
-
+void test_GaussSeidel(){
     int N = 40;
     int N2 = N*N;
     double h = 1.0/(N+1);
@@ -232,8 +226,7 @@ int main(int argc, char **argv){
     // print_matrix(N, X1);
     // print_matrix(N2, A);
 
-    // debug_gs(N2, A, B, X1, X2, 0, 100);
-    // solve_mf_gs(N2, B, X2, 0, 100);
+    solve_mf_gs(N2, B, X2, 0, 100);
     solve_gs(N2, A, B, X1, 0, 100);
 
     double rel_diff_mf = abs_diff(N2, X2, S) / abs_norm(N2, S); 
@@ -255,6 +248,10 @@ int main(int argc, char **argv){
     free(A);
     free(B);
     free(S);
+}
+
+int main(int argc, char **argv){
+    test_GaussSeidel();
 
     return 0;
 }

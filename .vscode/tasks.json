@@ -2,13 +2,15 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/g++",
+            "label": "C: gcc build active file",
+            "command": "/usr/bin/gcc",
             "args": [
-                "-g",
+                "-g2",
+                "-lm",
+                "-fopenmp",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.exe"
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
             ],
             "options": {
                 "cwd": "${fileDirname}"

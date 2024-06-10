@@ -33,6 +33,21 @@ void print_matrix_slice(int N, int slice, double *matrix){
     printf("\n");
 }
 
+void print_vector_int(int N, int *matrix){
+    for(int i = 0; i<N; i++){
+            printf("%d    \n", matrix[i]);
+    }
+    printf("\n");
+}
+
+void print_vector_double(int N, double *matrix){
+    for(int i = 0; i<N; i++){
+            printf("%f    \n", matrix[i]);
+    }
+    printf("\n");
+}
+
+
 
 // N x N is the dimension of the coarse grid
 void prolongation(int N, double *fine_grid, double *coarse_grid){
