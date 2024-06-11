@@ -14,54 +14,48 @@ int dim_coarser(int N){
     return (N-1)/2;
 }
 
-/*! 
-    N*N is the dimension of the fine grid
-    (N+2)*(N+2) is the dimension of the vector with ghost layer 
-    
-    M*M is the dimension of the coarse grid
-    (M+2)^2 is the dimension of the vector
-*/
-void restriction(double *fine_grid, int N, double *coarse_grid, int M){
-    M=M+2;
-    N=N+2;
-
-    for(int i = 1; i<M-1; i++){
-        for(int j = 1; j<M-1; j++){
-            int k = 2*i;
-            int l = 2*j;
-
-            coarse_grid[i * M + j] = 0.125  * (fine_grid[(k+1) * N + l] + fine_grid[(k-1) * N + l] + fine_grid[k * N + (l-1)] + fine_grid[k * N + (l+1)]) + 0.5 * fine_grid[k * N + l];
+// Function to perform restriction (fine grid to coarse grid)
+void restriction(double* fine, int N_fine, double* coarse, int N_coarse) {
+    // N_fine = N, N_coarse = (N-1)/2 (because we assume N_fine = 2 * N_coarse + 1)
+    for (int i = 1; i <= N_coarse; i++) {
+        for (int j = 1; j <= N_coarse; j++) {
+            coarse[i * (N_coarse + 2) + j] = 0.25 * (
+                fine[2 * i * (N_fine + 2) + 2 * j] +
+                0.5 * (fine[2 * i * (N_fine + 2) + 2 * j - 1] + fine[2 * i * (N_fine + 2) + 2 * j + 1]) +
+                0.5 * (fine[(2 * i - 1) * (N_fine + 2) + 2 * j] + fine[(2 * i + 1) * (N_fine + 2) + 2 * j]) +
+                0.25 * (fine[(2 * i - 1) * (N_fine + 2) + 2 * j - 1] + fine[(2 * i - 1) * (N_fine + 2) + 2 * j + 1] +
+                        fine[(2 * i + 1) * (N_fine + 2) + 2 * j - 1] + fine[(2 * i + 1) * (N_fine + 2) + 2 * j + 1])
+            );
         }
     }
 }
 
-// N x N is the dimension of the coarse grid
-void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
-    N+=2;
-    M+=2;
-    // only iterate over the inner points and interpolate them from the coarse grid
-    for(int i = 1; i<M-1; i++){
-        for(int j=1; j<M-1; j++){
-            int k = i/2;
-            int l = j/2;
-            if(i%2 == 0 && j%2==0){
-                fine_grid[i * M + j] = coarse_grid[k * N + l];
-            }
-            else if(i%2 == 1 && j%2==0){
-                fine_grid[i * M + j] = 0.5 * coarse_grid[k * N + l] + 0.5 * coarse_grid[(k+1) * N + l];
-
-            }
-            else if(i%2 == 0 && j%2==1){
-                fine_grid[i * M + j] = 0.5 * coarse_grid[k * N + l] + 0.5 * coarse_grid[k * N + (l+1)];
-
-            }
-            else if(i%2 == 1 && j%2==1){
-                fine_grid[i * M + j] =    0.25 * coarse_grid[k * N + l] 
-                                        + 0.25 * coarse_grid[(k+1) * N + l]
-                                        + 0.25 * coarse_grid[k * N + (l+1)]
-                                        + 0.25 * coarse_grid[(k+1) * N + (l+1)];
-
-            }
+// Function to perform prolongation (coarse grid to fine grid)
+void prolongation(double* coarse, int N_coarse, double* fine, int N_fine) {
+    // N_fine = N, N_coarse = (N-1)/2 (because we assume N_fine = 2 * N_coarse + 1)
+    for (int i = 1; i <= N_coarse; i++) {
+        for (int j = 1; j <= N_coarse; j++) {
+            fine[2 * i * (N_fine + 2) + 2 * j] = coarse[i * (N_coarse + 2) + j];
+            fine[2 * i * (N_fine + 2) + 2 * j - 1] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1]);
+            fine[2 * i * (N_fine + 2) + 2 * j + 1] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1]);
+            fine[(2 * i - 1) * (N_fine + 2) + 2 * j] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j]);
+            fine[(2 * i + 1) * (N_fine + 2) + 2 * j] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j]);
+            fine[(2 * i - 1) * (N_fine + 2) + 2 * j - 1] = 0.25 * (
+                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1] +
+                coarse[(i - 1) * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j - 1]
+            );
+            fine[(2 * i - 1) * (N_fine + 2) + 2 * j + 1] = 0.25 * (
+                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1] +
+                coarse[(i - 1) * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j + 1]
+            );
+            fine[(2 * i + 1) * (N_fine + 2) + 2 * j - 1] = 0.25 * (
+                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1] +
+                coarse[(i + 1) * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j - 1]
+            );
+            fine[(2 * i + 1) * (N_fine + 2) + 2 * j + 1] = 0.25 * (
+                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1] +
+                coarse[(i + 1) * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j + 1]
+            );
         }
     }
 }
@@ -200,6 +194,7 @@ void v_cycle(double** u, double **f, int N, int levels,int v){
 
         double *r;
         r = (double*)malloc((vec_size)*sizeof(double));
+        null_vec(r,vec_size);
         // Smoothing
         smooth(u[l],f[l],Nlevel,v);
 
@@ -260,6 +255,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
         // Perform a V-cycle to update the solution
         v_cycle(u, f, N, levels, v);
 
+        // clean up f
         int Nlevel = dim_coarser(N);
         for (int i=levels-2;i>=0;i--){
             null_vec(f[i], pow( Nlevel+2 , 2));
@@ -267,8 +263,8 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
         }
 
         // calculate new residual
-        mfMult(N, u[levels - 1], r);
-        axpy(r, -1, r, f[levels - 1], vec_size);
+        mfMult(N, u[levels - 1], r);                //Au
+        axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-Au
 
         err = norm(r,vec_size);
         printf("Error: %f\n",err);
