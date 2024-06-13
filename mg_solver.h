@@ -183,7 +183,7 @@ void exact_solve(double u[], double f[], int N) {
     free(temp_u);
 }
 
-void v_cycle(double** u, double **f, int N, int levels,int v){
+void v_cycle(double** u, double **f, int N, int levels,int v,int debug){
     int vec_size_start = (N+2)*(N+2);
     int vec_size;
     
@@ -195,23 +195,33 @@ void v_cycle(double** u, double **f, int N, int levels,int v){
         double *r;
         r = (double*)malloc((vec_size)*sizeof(double));
         null_vec(r,vec_size);
+
         // Smoothing
         smooth(u[l],f[l],Nlevel,v);
+        if (debug==1){
+            printf("u_%d after smoothing:\n",l);
+            vec_print(Nlevel,u[l],"u");
+        }
 
         // residual
-        mfMult(Nlevel,u[l],r);
-        axpy(r, -1, r, f[l],vec_size);
+        mfMult(Nlevel,u[l],r);              //r=Au_l
+        axpy(r, -1, r, f[l],vec_size);      //r=f_l-Au_l
 
         // restriction
         int N_f = dim_coarser(Nlevel); 
         restriction(r,Nlevel, f[l-1],N_f);
         Nlevel=N_f;
+        if (debug==1){
+            printf("f_%d after smoothing:\n",l-1);
+            vec_print(Nlevel,f[l-1],"f");
+        }
 
         null_vec(u[l-1],(Nlevel + 2) * (Nlevel + 2));
 
         free(r);
     }
 
+    printf("Nlevel of coarsest grid: %d \n",Nlevel);
     // exact solve
     exact_solve(u[0],f[0],Nlevel);
 
@@ -248,12 +258,25 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
     double* r =(double*)malloc(vec_size*sizeof(double));
     null_vec(r,vec_size);
 
+    int debug = 1;
+
+    if (debug==1){
+        printf("\n Debug Mg method \n");
+        printf("Grid size N: %d\n",N);
+        it_max = 1;
+        printf("Max v cycle iterations: %d\n",it_max);
+        
+        vec_print(N,u[levels-1],"u_0");
+        vec_print(N,f[levels-1],"f_0");
+        vec_print(N,r,"r_0");
+    }
     
     do {
         iterations += 1;
 
         // Perform a V-cycle to update the solution
-        v_cycle(u, f, N, levels, v);
+        v_cycle(u, f, N, levels, v,debug);
+
 
         // clean up f
         int Nlevel = dim_coarser(N);
