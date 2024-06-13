@@ -62,6 +62,15 @@ void rand_vec(double x[], int N){
 
     }
 }
+void rand_vec_1d(double x[], int N){
+    int seed = 123456;
+    for (int i = 1;i<N+1;i++) {
+        // randomly initialize x with values in (0,1)
+        srand(seed + i);
+        double r = (double)rand() / (double)RAND_MAX;
+        x[i]=r;
+    }
+}
 
 /*! Displaying a vector with ghostlayer*/
 void vec_print(int N, double vec[], char name[]){
