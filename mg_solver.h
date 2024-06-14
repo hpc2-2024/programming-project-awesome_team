@@ -237,9 +237,15 @@ void v_cycle(double** u, double **f, int N, int levels,int v){
     }
 }
 
+int get_vec_size(int N, int dim, int ghostlayer){
+    if (ghostlayer==1){
+        N = N+2;
+    }
+    int vec_size = pow(N,dim);
+    return vec_size;
+}
 
-
-void mg_solve(double** u, double **f, int N, int levels,int v){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
     
     // setup
     int it_max = 99;
@@ -248,7 +254,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
     double err;
     double epsilon=0.0001;
 
-    int vec_size = (N+2)*(N+2);
+    int vec_size = get_vec_size(N,dim,1);
 
     double* r =(double*)malloc(vec_size*sizeof(double));
     null_vec(r,vec_size);
@@ -262,7 +268,8 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
 
         int Nlevel = dim_coarser(N);
         for (int i=levels-2;i>=0;i--){
-            null_vec(f[i], pow( Nlevel+2 , 2));
+            int vec_size_level = get_vec_size(N,dim,1);
+            null_vec(f[i], vec_size_level );
             Nlevel=dim_coarser(Nlevel);
         }
 
