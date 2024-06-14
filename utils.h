@@ -1,3 +1,6 @@
+#ifndef UTILS
+#define UTILS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -104,6 +107,16 @@ void print_2dim(int N, double vec[][5],char name[]){
     }
 }
 
+void print_matrix(int N , double *matrix){
+    for(int i = 0; i<N; i++){
+        for(int j = 0; j<N; j++){
+            printf("%f      ", matrix[i*N+j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 // axpy calculations with scalar y
 void axpy_scalar_y(double solution[], double a, double x[], double y, int N) {
     #pragma omp parallel for
@@ -135,3 +148,5 @@ void axpby(double solution[], double a, double x[],double b, double y[], int N) 
         solution[i] = a * x[i] + b*y[i];
     }
 }
+
+#endif

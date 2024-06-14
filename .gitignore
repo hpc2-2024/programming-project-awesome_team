@@ -1,1 +1,4 @@
-note
+*.exe
+.vscode/*
+*.pdf
+*.json
