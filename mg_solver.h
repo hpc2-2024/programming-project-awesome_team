@@ -37,7 +37,12 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N){
             int k = 2*i-1;
             int l = 2*j-1;
 
-            coarse_grid[i * N_pad + j] = 0.125  * (fine_grid[(k+1) * M_pad + l] + fine_grid[(k-1) * M_pad + l] + fine_grid[k * M_pad + (l-1)] + fine_grid[k * M_pad + (l+1)]) + 0.5 * fine_grid[k * M_pad + l];
+            coarse_grid[i * N_pad + j] = 0.125  * (
+                fine_grid[(k+1) * M_pad + l]
+                + fine_grid[(k-1) * M_pad + l]
+                + fine_grid[k * M_pad + (l-1)] 
+                + fine_grid[k * M_pad + (l+1)]) 
+                + 0.5 * fine_grid[k * M_pad + l];
         }
     }
 }
