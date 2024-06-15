@@ -22,13 +22,7 @@ void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N){
             int k = 2*i-1;
             int l = 2*j-1;
 
-            // set boundary points to 0
-            if(i == 0 || i == N_pad-1 || j == 0 || j == N_pad-1){
-                coarse_grid[i * N_pad + j] = 0.0; // set the boundary points to 0
-            } 
-            else{
-                coarse_grid[i * N_pad + j] = fine_grid[k * M_pad + l];
-            }
+            coarse_grid[i * N_pad + j] = fine_grid[k * M_pad + l];
 
         }
     }
@@ -38,18 +32,12 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N){
     int M_pad = M+2;
     int N_pad = N+2;
 
-    for(int i = 0; i<N_pad; i++){
-        for(int j = 0; j<N_pad; j++){
+    for(int i = 1; i<N_pad-1; i++){
+        for(int j = 1; j<N_pad-1; j++){
             int k = 2*i-1;
             int l = 2*j-1;
 
-            // set boundary points to 0
-            if(i == 0 || i == N_pad-1 || j == 0 || j == N_pad-1){
-                coarse_grid[i * N_pad + j] = 0.0; // set the boundary points to 0
-            } 
-            else{
-                coarse_grid[i * N_pad + j] = 0.125  * (fine_grid[(k+1) * M_pad + l] + fine_grid[(k-1) * M_pad + l] + fine_grid[k * M_pad + (l-1)] + fine_grid[k * M_pad + (l+1)]) + 0.5 * fine_grid[k * M_pad + l];
-            }
+            coarse_grid[i * N_pad + j] = 0.125  * (fine_grid[(k+1) * M_pad + l] + fine_grid[(k-1) * M_pad + l] + fine_grid[k * M_pad + (l-1)] + fine_grid[k * M_pad + (l+1)]) + 0.5 * fine_grid[k * M_pad + l];
         }
     }
 }
@@ -60,15 +48,12 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M){
     int M_pad = M + 2;
 
     // only iterate over the inner points and interpolate them from the coarse grid
-    for(int i = 0; i<M_pad; i++){
-        for(int j = 0; j<M_pad; j++){
+    for(int i = 1; i<M_pad-1; i++){
+        for(int j = 1; j<M_pad-1; j++){
             int k = (int) (i+1)/2;
             int l = (int) (j+1)/2;
 
-            if(i == 0 || i == M_pad-1 || j == 0 || j == M_pad-1){
-                fine_grid[i * M_pad + j] = 0.0; // set the boundary points to 0
-            }
-            else if(i%2 == 1 && j%2==1){
+            if(i%2 == 1 && j%2==1){
                 fine_grid[i * M_pad + j] = coarse_grid[k * N_pad + l];
             }
             else if(i%2 == 0 && j%2==1){
