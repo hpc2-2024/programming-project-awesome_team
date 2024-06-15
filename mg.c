@@ -16,18 +16,19 @@ double fun_solution(double x, double y){
 
 void init_b(double b[],int N){
     double h = 1.0/(N+1);
+    double h2 = h * h;
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
         for (int j = 1;j<N+1;j++){
-            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
+            b[(N+2)*i+j]=fun(i*h,j*h)*h2; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
         }
     }
 }
 
 int main (int argc, char** argv){
     // Variables init
-    int N=23;
-    int levels=2;
+    int N=129;
+    int levels=4;
     int v=3;
     
     if (argc>3){
@@ -75,11 +76,10 @@ int main (int argc, char** argv){
     }
     init_b(f[levels-1],N);
 
-    
+    // printf("Right-Hand Side at the Start:\n");
+    // print_matrix(N+2, f[levels-1]);
+
     mg_solve(u,f,N,levels,v);
-
-
-
 
     //Output
     printf("\n");
@@ -88,9 +88,10 @@ int main (int argc, char** argv){
     printf("Number of smoothing iterations, v = %d\n",v);
 
 
-    //Speicherfregeben
+    // Free memory
     for (int i=0;i<levels;i++){
         free(u[i]);
     }
     free(u);
+    return 0;
 }

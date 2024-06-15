@@ -1,61 +1,80 @@
-#ifndef utils
-#define utils
-#endif
+#ifndef MG_SOLVER
+#define MG_SOLVER
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int dim_finer(int N){
-    return N*2 + 1;
+    return N*2 - 1;
 }
 
-int dim_coarser(int N){
-    return (N-1)/2;
+int dim_coarser(int M){
+    return (M+1)/2;
 }
 
-// Function to perform restriction (fine grid to coarse grid)
-void restriction(double* fine, int N_fine, double* coarse, int N_coarse) {
-    // N_fine = N, N_coarse = (N-1)/2 (because we assume N_fine = 2 * N_coarse + 1)
-    for (int i = 1; i <= N_coarse; i++) {
-        for (int j = 1; j <= N_coarse; j++) {
-            coarse[i * (N_coarse + 2) + j] = 0.25 * (
-                fine[2 * i * (N_fine + 2) + 2 * j] +
-                0.5 * (fine[2 * i * (N_fine + 2) + 2 * j - 1] + fine[2 * i * (N_fine + 2) + 2 * j + 1]) +
-                0.5 * (fine[(2 * i - 1) * (N_fine + 2) + 2 * j] + fine[(2 * i + 1) * (N_fine + 2) + 2 * j]) +
-                0.25 * (fine[(2 * i - 1) * (N_fine + 2) + 2 * j - 1] + fine[(2 * i - 1) * (N_fine + 2) + 2 * j + 1] +
-                        fine[(2 * i + 1) * (N_fine + 2) + 2 * j - 1] + fine[(2 * i + 1) * (N_fine + 2) + 2 * j + 1])
-            );
+void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N){
+    int M_pad = M+2;
+    int N_pad = N+2;
+
+    for(int i = 0; i<N_pad; i++){
+        for(int j = 0; j<N_pad; j++){
+            int k = 2*i-1;
+            int l = 2*j-1;
+
+            coarse_grid[i * N_pad + j] = fine_grid[k * M_pad + l];
+
         }
     }
 }
 
-// Function to perform prolongation (coarse grid to fine grid)
-void prolongation(double* coarse, int N_coarse, double* fine, int N_fine) {
-    // N_fine = N, N_coarse = (N-1)/2 (because we assume N_fine = 2 * N_coarse + 1)
-    for (int i = 1; i <= N_coarse; i++) {
-        for (int j = 1; j <= N_coarse; j++) {
-            fine[2 * i * (N_fine + 2) + 2 * j] = coarse[i * (N_coarse + 2) + j];
-            fine[2 * i * (N_fine + 2) + 2 * j - 1] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1]);
-            fine[2 * i * (N_fine + 2) + 2 * j + 1] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1]);
-            fine[(2 * i - 1) * (N_fine + 2) + 2 * j] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j]);
-            fine[(2 * i + 1) * (N_fine + 2) + 2 * j] = 0.5 * (coarse[i * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j]);
-            fine[(2 * i - 1) * (N_fine + 2) + 2 * j - 1] = 0.25 * (
-                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1] +
-                coarse[(i - 1) * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j - 1]
-            );
-            fine[(2 * i - 1) * (N_fine + 2) + 2 * j + 1] = 0.25 * (
-                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1] +
-                coarse[(i - 1) * (N_coarse + 2) + j] + coarse[(i - 1) * (N_coarse + 2) + j + 1]
-            );
-            fine[(2 * i + 1) * (N_fine + 2) + 2 * j - 1] = 0.25 * (
-                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j - 1] +
-                coarse[(i + 1) * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j - 1]
-            );
-            fine[(2 * i + 1) * (N_fine + 2) + 2 * j + 1] = 0.25 * (
-                coarse[i * (N_coarse + 2) + j] + coarse[i * (N_coarse + 2) + j + 1] +
-                coarse[(i + 1) * (N_coarse + 2) + j] + coarse[(i + 1) * (N_coarse + 2) + j + 1]
-            );
+void restriction_half(double *fine_grid, int M, double *coarse_grid, int N){
+    int M_pad = M+2;
+    int N_pad = N+2;
+
+    for(int i = 1; i<N_pad-1; i++){
+        for(int j = 1; j<N_pad-1; j++){
+            int k = 2*i-1;
+            int l = 2*j-1;
+
+            coarse_grid[i * N_pad + j] = 0.125  * (
+                fine_grid[(k+1) * M_pad + l]
+                + fine_grid[(k-1) * M_pad + l]
+                + fine_grid[k * M_pad + (l-1)] 
+                + fine_grid[k * M_pad + (l+1)]) 
+                + 0.5 * fine_grid[k * M_pad + l];
+        }
+    }
+}
+
+// expects a padded coarse grid of size (N+2) x (N+2) and an empty, padded fine grid of size (M+2) x (M+2)
+void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M){
+    int N_pad = N + 2;
+    int M_pad = M + 2;
+
+    // only iterate over the inner points and interpolate them from the coarse grid
+    for(int i = 1; i<M_pad-1; i++){
+        for(int j = 1; j<M_pad-1; j++){
+            int k = (int) (i+1)/2;
+            int l = (int) (j+1)/2;
+
+            if(i%2 == 1 && j%2==1){
+                fine_grid[i * M_pad + j] = coarse_grid[k * N_pad + l];
+            }
+            else if(i%2 == 0 && j%2==1){
+                fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[(k+1) * N_pad + l];
+
+            }
+            else if(i%2 == 1 && j%2==0){
+                fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[k * N_pad + (l+1)];
+
+            }
+            else if(i%2 == 0 && j%2==0){
+                fine_grid[i * M_pad + j]=  0.25 * coarse_grid[k * N_pad + l] 
+                                        + 0.25 * coarse_grid[(k+1) * N_pad + l]
+                                        + 0.25 * coarse_grid[k * N_pad + (l+1)]
+                                        + 0.25 * coarse_grid[(k+1) * N_pad + (l+1)];
+            }
         }
     }
 }
@@ -183,77 +202,105 @@ void exact_solve(double u[], double f[], int N) {
     free(temp_u);
 }
 
-void v_cycle(double** u, double **f, int N, int levels,int v){
-    int vec_size_start = (N+2)*(N+2);
+void v_cycle(double** u, double **f, int N_start, int levels, int v, int debug){
     int vec_size;
-    
-    int Nlevel= N;
-    for (int l=levels-1;l>=1;l--){
-        // number of points in the grid (without border)
-        vec_size = (2+Nlevel)*(Nlevel+2);
+    int N = N_start;
+
+    for (int l = levels-1; l>=1; l--){
+        vec_size = (N + 2) * (N + 2);
+        int N_coarser = dim_coarser(N); 
+        int vec_size_coarser = (N_coarser + 2) * (N_coarser + 2);
 
         double *r;
-        r = (double*)malloc((vec_size)*sizeof(double));
+        r = malloc(vec_size * sizeof(*r));
         null_vec(r,vec_size);
-        // Smoothing
-        smooth(u[l],f[l],Nlevel,v);
 
-        // residual
-        mfMult(Nlevel,u[l],r);
-        axpy(r, -1, r, f[l],vec_size);
+        // Apply Smoothing
+        smooth(u[l], f[l], N, v);
+        if (debug==1){
+            printf("u_%d after smoothing:\n",l);
+            vec_print(N,u[l],"u");
+        }
 
-        // restriction
-        int N_f = dim_coarser(Nlevel); 
-        restriction(r,Nlevel, f[l-1],N_f);
-        Nlevel=N_f;
+        // Compute Residual
+        mfMult(N,u[l],r);
+        axpy(r, -1, r, f[l], vec_size);
 
-        null_vec(u[l-1],(Nlevel + 2) * (Nlevel + 2));
+        // Apply Restriction
+        restriction_half(r, N, f[l-1], N_coarser);
+        if (debug==1){
+            printf("f_%d after smoothing:\n",l-1);
+            vec_print(N_coarser,f[l-1],"f");
+        }
 
+        // print_matrix(N_coarser + 2, f[l-1]);
+
+        null_vec(u[l-1], vec_size_coarser);
+
+        N = N_coarser;
         free(r);
     }
 
-    // exact solve
-    exact_solve(u[0],f[0],Nlevel);
+    exact_solve(u[0],f[0],N);
 
     for (int l=1;l<levels;l++){
-        int Nlevel_smaller = Nlevel;
-        Nlevel = dim_finer(Nlevel);
-        double *temp_u = (double *)malloc(pow(Nlevel+2,2) * sizeof(double));
-        null_vec(temp_u,pow(Nlevel+2,2));
+        vec_size = (N + 2) * (N + 2);
+        int N_finer = dim_finer(N);
+        int vec_size_finer = (N_finer + 2) * (N_finer + 2);
+        
+        // init temporary vector  
+        double *u_temp;
+        u_temp = malloc(vec_size_finer * sizeof(*u_temp));
+        null_vec(u_temp, vec_size_finer);
 
-        // prolongate
-        prolongation(u[l-1],Nlevel_smaller,temp_u,Nlevel);
+        // print_matrix(N+2, u[l-1]);
+
+        // Apply Prolongation
+        prolongation_simple(u[l-1], N, u_temp, N_finer);
+
+        // print_matrix(N_finer + 2, u_temp);
+
         // correction
-        axpy(u[l],1,u[l],temp_u,pow(Nlevel+2,2));
-        // Smoothing
-        smooth(u[l],f[l],Nlevel,v);
+        axpy(u[l], 1, u[l], u_temp, vec_size_finer);
 
-        free(temp_u);
+        // Smoothing
+        smooth(u[l], f[l], N_finer, v);
+
+        N = N_finer;
+        free(u_temp);
     }
 }
 
-
-
 void mg_solve(double** u, double **f, int N, int levels,int v){
-    
-    // setup
-    int it_max = 99;
-    int iterations = 0;
-
+    int iter_max = 200;
+    int iter = 0;
     double err;
     double epsilon=0.0001;
-
     int vec_size = (N+2)*(N+2);
 
-    double* r =(double*)malloc(vec_size*sizeof(double));
-    null_vec(r,vec_size);
+    double *r;
+    r = malloc(vec_size * sizeof(*r));
+    null_vec(r, vec_size);
 
+    int debug = 0;
+
+    if (debug==1){
+        printf("\n Debug Mg method \n");
+        printf("Grid size N: %d\n",N);
+        iter_max = 1;
+        printf("Max v cycle iterations: %d\n",iter_max);
+        
+        vec_print(N,u[levels-1],"u_0");
+        vec_print(N,f[levels-1],"f_0");
+        vec_print(N,r,"r_0");
+    }
     
     do {
-        iterations += 1;
+        iter += 1;
 
         // Perform a V-cycle to update the solution
-        v_cycle(u, f, N, levels, v);
+        v_cycle(u, f, N, levels, v,debug);
+
 
         // clean up f
         int Nlevel = dim_coarser(N);
@@ -262,19 +309,20 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
             Nlevel=dim_coarser(Nlevel);
         }
 
-        // calculate new residual
+        // Update residual
         mfMult(N, u[levels - 1], r);                //Au
         axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-Au
 
-        err = norm(r,vec_size);
+        err = norm(r, vec_size);
         printf("Error: %f\n",err);
-        if (iterations>it_max){
-            printf("Multigrid solve stopped after %d iterations without convergence.", iterations);
+        if (iter>iter_max){
+            printf("Multigrid solve stopped after %d iter without convergence.", iter);
             break;
         }
-    } while ( err >epsilon);
+    } while (err > epsilon);
     
     free(r);
     // solution:
 }
 
+#endif
