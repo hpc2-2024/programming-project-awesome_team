@@ -234,7 +234,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v){
         // print_matrix(N+2, r);
 
         // Apply Restriction
-        restriction_simple(r, N, f[l-1], N_coarser);
+        restriction_half(r, N, f[l-1], N_coarser);
 
         // print_matrix(N_coarser + 2, f[l-1]);
 
@@ -244,16 +244,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v){
         free(r);
     }
 
-    // printf("Input for the exact solver: \n");
-    // print_matrix(N+2, u[0]);
-
-    // printf("Right-Hand Side for the exact solver: \n");
-    // print_matrix(N+2, f[0]);
-
     exact_solve(u[0],f[0],N);
-
-    // printf("Solution of the exact solver: \n");
-    // print_matrix(N+2, u[0]);
 
     for (int l=1;l<levels;l++){
         vec_size = (N + 2) * (N + 2);
@@ -308,13 +299,6 @@ void mg_solve(double** u, double **f, int N, int levels,int v){
 
         // Update residual
         mfMult(N, u[levels - 1], r);
-
-        // printf("Estimated b:\n");
-        // print_matrix(N+2, r);
-
-        // printf("Correct b:\n");
-        // print_matrix(N+2, f[levels-1]);
-
         axpy(r, -1, r, f[levels - 1], vec_size);
 
         err = norm(r, vec_size);

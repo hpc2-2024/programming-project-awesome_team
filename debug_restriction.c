@@ -45,33 +45,6 @@ void init_s(int N, double *s){
     }
 }
 
-void print_matrix(int N , double *matrix){
-    for(int i = 0; i<N; i++){
-        for(int j = 0; j<N; j++){
-            printf("%f      ", matrix[i*N+j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-void fill_val(int N, double *matrix, double val){
-    for(int i = 0; i<N; i++){
-        for(int j = 0; j<N; j++){
-            matrix[i * N + j] = val;
-        }
-    }
-}
-
-void fill_zeros(int N, double *matrix){
-    for(int i = 0; i<N; i++){
-        for(int j = 0; j<N; j++){
-            matrix[i * N + j] = 0.0;
-        }
-    }
-}
-
-
 // expects a padded coarse grid of size (N+2) x (N+2) and an empty, padded fine grid of size (M+2) x (M+2)
 void prolongation(double *coarse_grid, int N, double* fine_grid, int M){
     int N_pad = N + 2;
