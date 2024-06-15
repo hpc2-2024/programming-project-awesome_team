@@ -1,3 +1,6 @@
+#ifndef UTILS
+#define UTILS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -38,7 +41,23 @@ double norm(double arr[], int arrSize){
     sol = dot(arr,arr, arrSize);
     return sqrt(sol);
 }
+///// FUNCTIONS FOR FILLING VECTORS
 
+void fill_val(int N, double *matrix, double val){
+    for(int i = 0; i<N; i++){
+        for(int j = 0; j<N; j++){
+            matrix[i * N + j] = val;
+        }
+    }
+}
+
+void fill_zeros(int N, double *matrix){
+    for(int i = 0; i<N; i++){
+        for(int j = 0; j<N; j++){
+            matrix[i * N + j] = 0.0;
+        }
+    }
+}
 /*! fills array with zeros */
 void null_vec(double array[], int arrSize){
     for (int i=0;i<arrSize;i++){
@@ -70,6 +89,18 @@ void rand_vec_1d(double x[], int N){
         double r = (double)rand() / (double)RAND_MAX;
         x[i]=r;
     }
+}
+
+///// FUNCTIONS FOR PRINTING VECTORS AND MATRICES /////////////
+
+void print_matrix(int N , double *matrix){
+    for(int i = 0; i<N; i++){
+        for(int j = 0; j<N; j++){
+            printf("%f      ", matrix[i*N+j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 /*! Displaying a vector with ghostlayer*/
@@ -113,6 +144,8 @@ void print_2dim(int N, double vec[][5],char name[]){
     }
 }
 
+/////////////////////////////
+
 // axpy calculations with scalar y
 void axpy_scalar_y(double solution[], double a, double x[], double y, int N) {
     #pragma omp parallel for
@@ -144,3 +177,5 @@ void axpby(double solution[], double a, double x[],double b, double y[], int N) 
         solution[i] = a * x[i] + b*y[i];
     }
 }
+
+#endif

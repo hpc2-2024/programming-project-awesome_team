@@ -22,10 +22,11 @@ double fun_solution(double x, double y){
 
 void init_b(double b[],int N){
     double h = 1.0/(N+1);
+    double h2 = h * h;
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
         for (int j = 1;j<N+1;j++){
-            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
+            b[(N+2)*i+j]=fun(i*h,j*h)*h2; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
         }
     }
 }
@@ -68,10 +69,7 @@ void mg_1dim(int N, int levels, int v){
         free(u[i]);
     }
     free(u);
-    for (int i=0;i<levels;i++){
-        free(f[i]);
-    }
-    free(f);
+
 }
 
 void mg_2dim(int N, int levels, int v){
@@ -104,19 +102,16 @@ void mg_2dim(int N, int levels, int v){
 
 
 
-
     //Output
     printf("\n");
     printf("Grid size, N = %d\n",N);
     printf("Number of grids, levels = %d\n",levels);
     printf("Number of smoothing iterations, v = %d\n",v);
 
-
-    //Speicherfregeben
+    // Free memory
     for (int i=0;i<levels;i++){
         free(u[i]);
-    }
-    free(u);
+    }   
     for (int i=0;i<levels;i++){
         free(f[i]);
     }
@@ -165,5 +160,7 @@ int main (int argc, char** argv){
         printf("1 dim mg\n");
         mg_1dim(N,levels,v);
     }
+
+    return 0;
 
 }
