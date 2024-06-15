@@ -35,7 +35,7 @@ void mfMult(int N, double r[], double y[]){
     }
 }
 
-void poisson_mat_vek(int dim, int N, int double r[], double y[]){
+void poisson_mat_vek(int dim, int N, double r[], double y[]){
     if (dim==2){
         for (int i=1;i<N+1;i++){
             for (int j=1;j<N+1;j++){

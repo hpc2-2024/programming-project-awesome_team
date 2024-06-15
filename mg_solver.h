@@ -202,14 +202,23 @@ void exact_solve(double u[], double f[], int N) {
     free(temp_u);
 }
 
-void v_cycle(double** u, double **f, int N_start, int levels, int v, int debug){
+
+int get_vec_size(int N, int dim, int ghostlayer){
+    if (ghostlayer!=0){
+        N = N+2;
+    }
+    int vec_size = pow(N,dim);
+    return vec_size;
+}
+
+void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int debug){
     int vec_size;
     int N = N_start;
 
     for (int l = levels-1; l>=1; l--){
-        vec_size = (N + 2) * (N + 2);
+        vec_size = get_vec_size(N,dim,1);
         int N_coarser = dim_coarser(N); 
-        int vec_size_coarser = (N_coarser + 2) * (N_coarser + 2);
+        int vec_size_coarser = get_vec_size(N_coarser,dim,1);
 
         double *r;
         r = malloc(vec_size * sizeof(*r));
@@ -223,7 +232,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int debug){
         }
 
         // Compute Residual
-        mfMult(N,u[l],r);
+        poisson_mat_vek(dim,N,u[l],r);
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
@@ -244,9 +253,9 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int debug){
     exact_solve(u[0],f[0],N);
 
     for (int l=1;l<levels;l++){
-        vec_size = (N + 2) * (N + 2);
+        vec_size = get_vec_size(N,dim,1);
         int N_finer = dim_finer(N);
-        int vec_size_finer = (N_finer + 2) * (N_finer + 2);
+        int vec_size_finer = get_vec_size(N_finer,dim,1);
         
         // init temporary vector  
         double *u_temp;
@@ -271,13 +280,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int debug){
     }
 }
 
-int get_vec_size(int N, int dim, int ghostlayer){
-    if (ghostlayer==1){
-        N = N+2;
-    }
-    int vec_size = pow(N,dim);
-    return vec_size;
-}
+
 
 void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
     int iter_max = 200;
@@ -308,7 +311,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         iter += 1;
 
         // Perform a V-cycle to update the solution
-        v_cycle(u, f, N, levels, v,debug);
+        v_cycle(u, f, N, levels, v, dim, debug);
 
 
         // clean up f
