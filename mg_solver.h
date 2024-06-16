@@ -13,6 +13,14 @@ int dim_coarser(int M){
     return (M+1)/2;
 }
 
+int get_vec_size(int N, int dim, int ghostlayer){
+    if (ghostlayer!=0){
+        N = N+2;
+    }
+    int vec_size = pow(N,dim);
+    return vec_size;
+}
+
 void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N){
     int M_pad = M+2;
     int N_pad = N+2;
@@ -80,15 +88,19 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M){
 }
 
 // Function to perform Jacobi smoothing
-void smooth_jacobi(double u[], double f[], int N, int v) {
+void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
     int i, j, k;
     int N_with_ghosts = N + 2;
-    double *u_new = (double *)malloc(N_with_ghosts * N_with_ghosts * sizeof(double));
+    int vec_size = get_vec_size(N,dim,1);
+    double *u_new = (double *)malloc(vec_size * sizeof(double));
+    null_vec(u_new,vec_size);
 
     // Jacobi iteration
     for (k = 0; k < v; k++) {
         // Copy u to u_new (needed for the Jacobi update)
-        memcpy(u_new, u, N_with_ghosts * N_with_ghosts * sizeof(double));
+        memcpy(u_new, u, vec_size * sizeof(double));
+
+        if (dim==2) {
 
         for (i = 1; i <= N; i++) {
             for (j = 1; j <= N; j++) {
@@ -102,15 +114,23 @@ void smooth_jacobi(double u[], double f[], int N, int v) {
             }
         }
 
+        } else if (dim==1) {
+            for (i=1;i<=N; i++){
+                u_new[i] = 0.5 * (
+                    u[i-1] + u[i+1] + f[i]
+                );
+            }
+        }
+
         // Swap u and u_new for the next iteration
-        memcpy(u, u_new, N_with_ghosts * N_with_ghosts * sizeof(double));
+        memcpy(u, u_new, vec_size * sizeof(double));
     }
 
     free(u_new);
 }
 
-void smooth(double u[], double f[], int N, int v) {
-    smooth_jacobi(u, f, N, v);
+void smooth(double u[], double f[], int N, int v,int dim) {
+    smooth_jacobi(u, f, N, v, dim);
 }
 
 // Simple Gaussian elimination solver for dense systems
@@ -203,13 +223,6 @@ void exact_solve(double u[], double f[], int N) {
 }
 
 
-int get_vec_size(int N, int dim, int ghostlayer){
-    if (ghostlayer!=0){
-        N = N+2;
-    }
-    int vec_size = pow(N,dim);
-    return vec_size;
-}
 
 void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int debug){
     int vec_size;
@@ -225,7 +238,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         null_vec(r,vec_size);
 
         // Apply Smoothing
-        smooth(u[l], f[l], N, v);
+        smooth(u[l], f[l], N, v, dim);
         if (debug==1){
             printf("u_%d after smoothing:\n",l);
             vec_print(N,u[l],"u");
@@ -273,7 +286,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         axpy(u[l], 1, u[l], u_temp, vec_size_finer);
 
         // Smoothing
-        smooth(u[l], f[l], N_finer, v);
+        smooth(u[l], f[l], N_finer, v, dim);
 
         N = N_finer;
         free(u_temp);
