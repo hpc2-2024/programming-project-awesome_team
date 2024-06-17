@@ -21,7 +21,7 @@ int get_vec_size(int N, int dim, int ghostlayer){
     return vec_size;
 }
 
-void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N){
+void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N, int dim){
     int M_pad = M+2;
     int N_pad = N+2;
 
@@ -36,27 +36,33 @@ void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N){
     }
 }
 
-void restriction_half(double *fine_grid, int M, double *coarse_grid, int N){
+void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int dim){
     int M_pad = M+2;
     int N_pad = N+2;
+    if (dim==2){
+        for(int i = 1; i<N_pad-1; i++){
+            for(int j = 1; j<N_pad-1; j++){
+                int k = 2*i-1;
+                int l = 2*j-1;
 
-    for(int i = 1; i<N_pad-1; i++){
-        for(int j = 1; j<N_pad-1; j++){
-            int k = 2*i-1;
-            int l = 2*j-1;
-
-            coarse_grid[i * N_pad + j] = 0.125  * (
-                fine_grid[(k+1) * M_pad + l]
-                + fine_grid[(k-1) * M_pad + l]
-                + fine_grid[k * M_pad + (l-1)] 
-                + fine_grid[k * M_pad + (l+1)]) 
-                + 0.5 * fine_grid[k * M_pad + l];
+                coarse_grid[i * N_pad + j] = 0.125  * (
+                    fine_grid[(k+1) * M_pad + l]
+                    + fine_grid[(k-1) * M_pad + l]
+                    + fine_grid[k * M_pad + (l-1)] 
+                    + fine_grid[k * M_pad + (l+1)]) 
+                    + 0.5 * fine_grid[k * M_pad + l];
+            }
+        }
+    }
+    else if (dim==1){
+        for (int i=1;i<N_pad-1;i++){
+            coarse_grid[i] = 0.25  * (fine_grid[2*i-1]+2*fine_grid[2*i]+fine_grid[2*i+1]);
         }
     }
 }
 
 // expects a padded coarse grid of size (N+2) x (N+2) and an empty, padded fine grid of size (M+2) x (M+2)
-void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M){
+void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,int dim){
     int N_pad = N + 2;
     int M_pad = M + 2;
 
@@ -202,10 +208,6 @@ void exact_solve(double u[], double f[], int N) {
         }
     }
 
-    // Use a simple Gaussian elimination method (or call an existing library function)
-    // to solve A * temp_u = b
-
-    // This is a placeholder for a solver function
     gaussian_elimination(A, b, temp_u, NN);
 
     // Map the solution back to the u array with ghost layers
@@ -249,7 +251,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
-        restriction_half(r, N, f[l-1], N_coarser);
+        restriction_half(r, N, f[l-1], N_coarser,dim);
         if (debug==1){
             printf("f_%d after smoothing:\n",l-1);
             vec_print(N_coarser,f[l-1],"f");
@@ -278,7 +280,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         // print_matrix(N+2, u[l-1]);
 
         // Apply Prolongation
-        prolongation_simple(u[l-1], N, u_temp, N_finer);
+        prolongation_simple(u[l-1], N, u_temp, N_finer,dim);
 
         // print_matrix(N_finer + 2, u_temp);
 
@@ -292,8 +294,6 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         free(u_temp);
     }
 }
-
-
 
 void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
     int iter_max = 200;
