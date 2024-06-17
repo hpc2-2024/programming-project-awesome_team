@@ -3,6 +3,25 @@
 #include "utils.h"
 #include "mg_solver.h"
 
+
+/*! The function f of the exercise sheet*/
+double fun(double x, double y){
+    return sin(y*M_PI)*sin(x*M_PI)*2.0*M_PI*M_PI;
+}
+
+double fun_solution(double x, double y){
+    return sin(x*M_PI)*sin(y*M_PI);
+}
+
+void init_b(double b[],int N){
+    double h = 1.0/(N+1);
+    // inner points of x_0,b
+    for (int i = 1;i<N+1;i++) {
+        for (int j = 1;j<N+1;j++){
+            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
+        }
+    }
+}
 void test_norm(){
     printf("Testing norm funtion - START \n");
     // TC1
@@ -114,11 +133,46 @@ void test_gaussian_elemination(){
     }
     printf("Testing gaussian elemination - END \n\n");
 }
+
+void test_jacobi_smoothing(){
+    printf("Testing jacobi smoothing - START \n");
+
+    printf("TC1 - Convergences with only Jacobi\n");
+    int N = 49;
+    int vec_size = (N+2)*(N+2);
+
+    double u[vec_size];
+    null_vec(u,vec_size);
+    rand_vec(u,N);
+
+    double b[vec_size];
+    null_vec(b,vec_size);
+    init_b(b,N);
+    
+    double r[vec_size];
+    null_vec(r,vec_size);
+
+    for (int i = 0; i<10000; i++){
+        smooth_jacobi(u,b,N,1);
+    }
+
+    // calculate new residual
+    mfMult(N, u, r);                //Au
+    axpy(r, -1, r, b, vec_size);    //r= f-Au
+
+    double err = norm(r,vec_size);
+    printf("Error in jacobi: %f\n",err);
+
+
+    printf("Testing jacobi smoothing - END \n\n");
+}
+
+
 int main(){
     test_norm();
     test_prolongation();
     test_restriction();
     test_gaussian_elemination();
-
+    test_jacobi_smoothing();
     return 0;
 }
