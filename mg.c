@@ -60,9 +60,7 @@ void mg_1dim(int N, int levels, int v){
     }
     init_b_1d(f[levels-1],N);
     
-    print_1dim(N+2,u[levels-1],"u0");
-    print_1dim(N+2,f[levels-1],"b");
-
+    mg_solve(u,f,N,levels,v,1);
 
     //Speicherfregeben
     for (int i=0;i<levels;i++){

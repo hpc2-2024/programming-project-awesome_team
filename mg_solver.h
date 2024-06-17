@@ -193,7 +193,7 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
 }
 
 // Function to solve the 2D Poisson problem with ghost layers
-void exact_solve(double u[], double f[], int N) {
+void exact_solve_poisson_2D(double u[], double f[], int N) {
     int i, j, k;
     int NN = N * N;
 
@@ -239,6 +239,45 @@ void exact_solve(double u[], double f[], int N) {
     free(temp_u);
 }
 
+void exact_solve_poisson_1D(double u[], double f[], int N){
+    int NN = N * N;
+    double *A = (double *)malloc(NN * sizeof(double));
+    double *b = (double *)malloc(N * sizeof(double));
+    double *temp_u = (double *)malloc(N * sizeof(double)); // Temporary array for solution
+    null_vec(A,NN);
+
+    //Fill matrix A with the discretized Laplacian operator
+    for (int i=0;i<N;i++){
+        A[i*N + i]=2;
+        b[i]=f[i+1];
+    }
+    for (int i=0;i<N-1;i++){
+        A[i*N +i+1]=-1;
+        A[(i+1)*N + i]=-1;
+    }
+
+    gaussian_elimination(A, b, temp_u, N);
+
+    // Map the solution back to the array u with ghost layer
+    for (int i=1;i<=N;i++) {
+        u[i]=temp_u[i-1];
+    }
+
+    free(A);
+    free(b);
+    free(temp_u);
+
+}
+
+void exact_solve(double u[], double f[], int N, int dim){
+    if (dim==2){
+        exact_solve_poisson_2D(u,f,N);
+    }
+    else if (dim==1){
+        exact_solve_poisson_1D(u,f,N);
+    }
+}
+
 
 
 void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int debug){
@@ -280,7 +319,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         free(r);
     }
 
-    exact_solve(u[0],f[0],N);
+    exact_solve(u[0],f[0],N,dim);
 
     for (int l=1;l<levels;l++){
         vec_size = get_vec_size(N,dim,1);
