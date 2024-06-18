@@ -26,7 +26,7 @@ void init_b(double b[],int N){
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
         for (int j = 1;j<N+1;j++){
-            b[(N+2)*i+j]=fun(i*h,j*h)*h2; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
+            b[(N+2)*i+j]=fun(i*h,j*h); // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
         }
     }
 }
@@ -34,7 +34,7 @@ void init_b(double b[],int N){
 void init_b_1d(double b[], int N){
     double h = 1.0/(N+1);
     for (int i = 1;i<N+1;i++) {
-        b[i]=h*h;  
+        b[i]=1.0;  
     }
 }
 

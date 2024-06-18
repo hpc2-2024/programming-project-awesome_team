@@ -117,6 +117,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
 // Function to perform Jacobi smoothing
 void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
     int i, j, k;
+    double h = 1.0/(N+1);
     int N_with_ghosts = N + 2;
     int vec_size = get_vec_size(N,dim,1);
     double *u_new = (double *)malloc(vec_size * sizeof(double));
@@ -135,18 +136,19 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
                     u[(i-1) * N_with_ghosts + j] + // up
                     u[(i+1) * N_with_ghosts + j] + // down
                     u[i * N_with_ghosts + (j-1)] + // left
-                    u[i * N_with_ghosts + (j+1)]   // right
-                    + f[i * N_with_ghosts + j]     // source term
-                );
+                    u[i * N_with_ghosts + (j+1)]  // right
+                     * h * h* f[i * N_with_ghosts + j])     // source term
+                    ;
             }
         }
 
         } else if (dim==1) {
             for (i=1;i<=N; i++){
                 u_new[i] = 0.5 * (
-                    u[i-1] + u[i+1] + f[i]
+                    u[i-1] + u[i+1] + h*h*f[i]
                 );
             }
+            print_1dim(N+2,u_new,"u_k");
         }
 
         // Swap u and u_new for the next iteration
@@ -201,6 +203,8 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
 // Function to solve the 2D Poisson problem with ghost layers
 void exact_solve_poisson_2D(double u[], double f[], int N) {
     int i, j, k;
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     int NN = N * N;
 
     // Create matrix A (NN x NN) and vector b (NN)
@@ -221,11 +225,11 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
         for (j = 1; j <= N; j++) {
             int idx = (i-1) * N + (j-1);
             b[idx] = f[i * (N + 2) + j];
-            A[idx * NN + idx] = 4.0;
-            if (i > 1) A[idx * NN + (idx - N)] = -1.0; // up
-            if (i < N) A[idx * NN + (idx + N)] = -1.0; // down
-            if (j > 1) A[idx * NN + (idx - 1)] = -1.0; // left
-            if (j < N) A[idx * NN + (idx + 1)] = -1.0; // right
+            A[idx * NN + idx] =  4.0/h2;
+            if (i > 1) A[idx * NN + (idx - N)] = -1.0/h2; // up
+            if (i < N) A[idx * NN + (idx + N)] = -1.0/h2; // down
+            if (j > 1) A[idx * NN + (idx - 1)] = -1.0/h2; // left
+            if (j < N) A[idx * NN + (idx + 1)] = -1.0/h2; // right
         }
     }
 
@@ -247,6 +251,8 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
 
 void exact_solve_poisson_1D(double u[], double f[], int N){
     int NN = N * N;
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     double *A = (double *)malloc(NN * sizeof(double));
     double *b = (double *)malloc(N * sizeof(double));
     double *temp_u = (double *)malloc(N * sizeof(double)); // Temporary array for solution
@@ -254,12 +260,12 @@ void exact_solve_poisson_1D(double u[], double f[], int N){
 
     //Fill matrix A with the discretized Laplacian operator
     for (int i=0;i<N;i++){
-        A[i*N + i]=2;
+        A[i*N + i]=2/h2;
         b[i]=f[i+1];
     }
     for (int i=0;i<N-1;i++){
-        A[i*N +i+1]=-1;
-        A[(i+1)*N + i]=-1;
+        A[i*N +i+1]=-1/h2;
+        A[(i+1)*N + i]=-1/h2;
     }
 
     gaussian_elimination(A, b, temp_u, N);
@@ -396,8 +402,8 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         }
 
         // Update residual
-        poisson_mat_vek(dim,N, u[levels - 1], r);                //Au
-        axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-Au
+        poisson_mat_vek(dim,N, u[levels - 1], r);                //r=Au
+        axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-r
 
         err = norm(r, vec_size);
         printf("Error: %f\n",err);
