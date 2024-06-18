@@ -32,8 +32,9 @@ void init_b(double b[],int N){
 }
 
 void init_b_1d(double b[], int N){
+    double h = 1.0/(N+1);
     for (int i = 1;i<N+1;i++) {
-        b[i]=1;  
+        b[i]=h*h;  
     }
 }
 

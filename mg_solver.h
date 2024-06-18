@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Input number of inner points
+Output number of inner points of the next finer level*/
 int dim_finer(int N){
-    return N*2 - 1;
+    return N*2 + 1;
 }
 
+/* Input number of inner points
+Output number of inner points of the next coarser level*/
 int dim_coarser(int M){
-    return (M+1)/2;
+    return (M-1)/2;
 }
 
 int get_vec_size(int N, int dim, int ghostlayer){
@@ -42,8 +46,8 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
     if (dim==2){
         for(int i = 1; i<N_pad-1; i++){
             for(int j = 1; j<N_pad-1; j++){
-                int k = 2*i-1;
-                int l = 2*j-1;
+                int k = 2*i;
+                int l = 2*j;
 
                 coarse_grid[i * N_pad + j] = 0.125  * (
                     fine_grid[(k+1) * M_pad + l]
@@ -73,22 +77,24 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
                 int k = (int) (i+1)/2;
                 int l = (int) (j+1)/2;
 
-                if(i%2 == 1 && j%2==1){
+                if(i%2 == 0 && j%2==0){
                     fine_grid[i * M_pad + j] = coarse_grid[k * N_pad + l];
                 }
                 else if(i%2 == 0 && j%2==1){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[(k+1) * N_pad + l];
+                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
+                                            + 0.5 * coarse_grid[(k-1) * N_pad + l];
 
                 }
                 else if(i%2 == 1 && j%2==0){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[k * N_pad + (l+1)];
+                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
+                                            + 0.5 * coarse_grid[k * N_pad + (l-1)];
 
                 }
-                else if(i%2 == 0 && j%2==0){
+                else if(i%2 == 1 && j%2==1){
                     fine_grid[i * M_pad + j]=  0.25 * coarse_grid[k * N_pad + l] 
-                                            + 0.25 * coarse_grid[(k+1) * N_pad + l]
-                                            + 0.25 * coarse_grid[k * N_pad + (l+1)]
-                                            + 0.25 * coarse_grid[(k+1) * N_pad + (l+1)];
+                                            + 0.25 * coarse_grid[(k-1) * N_pad + l]
+                                            + 0.25 * coarse_grid[k * N_pad + (l-1)]
+                                            + 0.25 * coarse_grid[(k-1) * N_pad + (l-1)];
                 }
             }
         }
@@ -102,7 +108,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
             fine_grid[2*i]=coarse_grid[i];
         }
 
-        for (int i=1;i<N_pad-1;i++){
+        for (int i=1;i<N_pad;i++){
             fine_grid[2*i-1] = 0.5 * (coarse_grid[i-1]+coarse_grid[i]);
         }
     }
