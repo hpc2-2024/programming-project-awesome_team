@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "poisson_mat_vek.h"
 
 /* Input number of inner points
 Output number of inner points of the next finer level*/
