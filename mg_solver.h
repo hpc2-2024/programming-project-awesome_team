@@ -7,57 +7,7 @@
 #include "poisson_mat_vek.h"
 #include "smoother.h"
 #include "restriction.h"
-
-
-// expects a padded coarse grid of size (N+2) x (N+2) and an empty, padded fine grid of size (M+2) x (M+2)
-void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,int dim){
-    int N_pad = N + 2;
-    int M_pad = M + 2;
-
-    if (dim==2) {
-        // only iterate over the inner points and interpolate them from the coarse grid
-        for(int i = 1; i<M_pad-1; i++){
-            for(int j = 1; j<M_pad-1; j++){
-                int k = (int) (i+1)/2;
-                int l = (int) (j+1)/2;
-
-                if(i%2 == 0 && j%2==0){
-                    fine_grid[i * M_pad + j] = coarse_grid[k * N_pad + l];
-                }
-                else if(i%2 == 0 && j%2==1){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
-                                            + 0.5 * coarse_grid[(k-1) * N_pad + l];
-
-                }
-                else if(i%2 == 1 && j%2==0){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
-                                            + 0.5 * coarse_grid[k * N_pad + (l-1)];
-
-                }
-                else if(i%2 == 1 && j%2==1){
-                    fine_grid[i * M_pad + j]=  0.25 * coarse_grid[k * N_pad + l] 
-                                            + 0.25 * coarse_grid[(k-1) * N_pad + l]
-                                            + 0.25 * coarse_grid[k * N_pad + (l-1)]
-                                            + 0.25 * coarse_grid[(k-1) * N_pad + (l-1)];
-                }
-            }
-        }
-    }
-    else if (dim==1) {
-        // boundery condition
-        fine_grid[0]=0;
-        fine_grid[N_pad-1]=0;
-
-        for (int i = 1; i<N_pad-1;i++){
-            fine_grid[2*i]=coarse_grid[i];
-        }
-
-        for (int i=1;i<N_pad;i++){
-            fine_grid[2*i-1] = 0.5 * (coarse_grid[i-1]+coarse_grid[i]);
-        }
-    }
-}
-
+#include "prolongation.h"
 
 
 // Simple Gaussian elimination solver for dense systems
