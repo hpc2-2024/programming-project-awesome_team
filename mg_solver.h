@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Input number of inner points
+Output number of inner points of the next finer level*/
 int dim_finer(int N){
-    return N*2 - 1;
+    return N*2 + 1;
 }
 
+/* Input number of inner points
+Output number of inner points of the next coarser level*/
 int dim_coarser(int M){
-    return (M+1)/2;
+    return (M-1)/2;
 }
 
 int get_vec_size(int N, int dim, int ghostlayer){
@@ -42,8 +46,8 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
     if (dim==2){
         for(int i = 1; i<N_pad-1; i++){
             for(int j = 1; j<N_pad-1; j++){
-                int k = 2*i-1;
-                int l = 2*j-1;
+                int k = 2*i;
+                int l = 2*j;
 
                 coarse_grid[i * N_pad + j] = 0.125  * (
                     fine_grid[(k+1) * M_pad + l]
@@ -73,22 +77,24 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
                 int k = (int) (i+1)/2;
                 int l = (int) (j+1)/2;
 
-                if(i%2 == 1 && j%2==1){
+                if(i%2 == 0 && j%2==0){
                     fine_grid[i * M_pad + j] = coarse_grid[k * N_pad + l];
                 }
                 else if(i%2 == 0 && j%2==1){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[(k+1) * N_pad + l];
+                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
+                                            + 0.5 * coarse_grid[(k-1) * N_pad + l];
 
                 }
                 else if(i%2 == 1 && j%2==0){
-                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] + 0.5 * coarse_grid[k * N_pad + (l+1)];
+                    fine_grid[i * M_pad + j] = 0.5 * coarse_grid[k * N_pad + l] 
+                                            + 0.5 * coarse_grid[k * N_pad + (l-1)];
 
                 }
-                else if(i%2 == 0 && j%2==0){
+                else if(i%2 == 1 && j%2==1){
                     fine_grid[i * M_pad + j]=  0.25 * coarse_grid[k * N_pad + l] 
-                                            + 0.25 * coarse_grid[(k+1) * N_pad + l]
-                                            + 0.25 * coarse_grid[k * N_pad + (l+1)]
-                                            + 0.25 * coarse_grid[(k+1) * N_pad + (l+1)];
+                                            + 0.25 * coarse_grid[(k-1) * N_pad + l]
+                                            + 0.25 * coarse_grid[k * N_pad + (l-1)]
+                                            + 0.25 * coarse_grid[(k-1) * N_pad + (l-1)];
                 }
             }
         }
@@ -102,7 +108,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
             fine_grid[2*i]=coarse_grid[i];
         }
 
-        for (int i=1;i<N_pad-1;i++){
+        for (int i=1;i<N_pad;i++){
             fine_grid[2*i-1] = 0.5 * (coarse_grid[i-1]+coarse_grid[i]);
         }
     }
@@ -111,6 +117,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
 // Function to perform Jacobi smoothing
 void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
     int i, j, k;
+    double h = 1.0/(N+1);
     int N_with_ghosts = N + 2;
     int vec_size = get_vec_size(N,dim,1);
     double *u_new = (double *)malloc(vec_size * sizeof(double));
@@ -122,25 +129,15 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
         memcpy(u_new, u, vec_size * sizeof(double));
 
         if (dim==2) {
-
-        for (i = 1; i <= N; i++) {
-            for (j = 1; j <= N; j++) {
-                u_new[i * N_with_ghosts + j] = 0.25 * (
-                    u[(i-1) * N_with_ghosts + j] + // up
-                    u[(i+1) * N_with_ghosts + j] + // down
-                    u[i * N_with_ghosts + (j-1)] + // left
-                    u[i * N_with_ghosts + (j+1)]   // right
-                    + f[i * N_with_ghosts + j]     // source term
-                );
-            }
-        }
+            poisson_mat_vek(dim,N,u,u_new);
+            axpy(u_new,-1,u_new,f,vec_size);
+            axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
 
         } else if (dim==1) {
-            for (i=1;i<=N; i++){
-                u_new[i] = 0.5 * (
-                    u[i-1] + u[i+1] + f[i]
-                );
-            }
+            poisson_mat_vek(dim,N,u,u_new);
+            axpy(u_new,-1,u_new,f,vec_size);
+            axpy(u_new,0.6/2*h*h,u_new,u,vec_size);
+
         }
 
         // Swap u and u_new for the next iteration
@@ -195,6 +192,8 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
 // Function to solve the 2D Poisson problem with ghost layers
 void exact_solve_poisson_2D(double u[], double f[], int N) {
     int i, j, k;
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     int NN = N * N;
 
     // Create matrix A (NN x NN) and vector b (NN)
@@ -215,11 +214,11 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
         for (j = 1; j <= N; j++) {
             int idx = (i-1) * N + (j-1);
             b[idx] = f[i * (N + 2) + j];
-            A[idx * NN + idx] = 4.0;
-            if (i > 1) A[idx * NN + (idx - N)] = -1.0; // up
-            if (i < N) A[idx * NN + (idx + N)] = -1.0; // down
-            if (j > 1) A[idx * NN + (idx - 1)] = -1.0; // left
-            if (j < N) A[idx * NN + (idx + 1)] = -1.0; // right
+            A[idx * NN + idx] =  4.0/h2;
+            if (i > 1) A[idx * NN + (idx - N)] = -1.0/h2; // up
+            if (i < N) A[idx * NN + (idx + N)] = -1.0/h2; // down
+            if (j > 1) A[idx * NN + (idx - 1)] = -1.0/h2; // left
+            if (j < N) A[idx * NN + (idx + 1)] = -1.0/h2; // right
         }
     }
 
@@ -241,6 +240,8 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
 
 void exact_solve_poisson_1D(double u[], double f[], int N){
     int NN = N * N;
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     double *A = (double *)malloc(NN * sizeof(double));
     double *b = (double *)malloc(N * sizeof(double));
     double *temp_u = (double *)malloc(N * sizeof(double)); // Temporary array for solution
@@ -248,12 +249,12 @@ void exact_solve_poisson_1D(double u[], double f[], int N){
 
     //Fill matrix A with the discretized Laplacian operator
     for (int i=0;i<N;i++){
-        A[i*N + i]=2;
+        A[i*N + i]=2/h2;
         b[i]=f[i+1];
     }
     for (int i=0;i<N-1;i++){
-        A[i*N +i+1]=-1;
-        A[(i+1)*N + i]=-1;
+        A[i*N +i+1]=-1/h2;
+        A[(i+1)*N + i]=-1/h2;
     }
 
     gaussian_elimination(A, b, temp_u, N);
@@ -390,8 +391,8 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         }
 
         // Update residual
-        poisson_mat_vek(dim,N, u[levels - 1], r);                //Au
-        axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-Au
+        poisson_mat_vek(dim,N, u[levels - 1], r);                //r=Au
+        axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-r
 
         err = norm(r, vec_size);
         printf("Error: %f\n",err);
