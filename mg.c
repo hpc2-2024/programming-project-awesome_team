@@ -50,8 +50,9 @@ void mg_1dim(int N, int levels, int v){
         Nlevel=dim_coarser(Nlevel);
     }
     rand_vec_1d(u[levels-1],N);
+    
 
-    //init u
+    //init f
     double** f = (double**)malloc(levels*sizeof(double*));
     Nlevel = N;
     for (int i=levels-1;i>=0;i--){

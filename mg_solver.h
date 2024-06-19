@@ -143,12 +143,10 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
         }
 
         } else if (dim==1) {
-            for (i=1;i<=N; i++){
-                u_new[i] = 0.5 * (
-                    u[i-1] + u[i+1] + h*h*f[i]
-                );
-            }
-            print_1dim(N+2,u_new,"u_k");
+            poisson_mat_vek(dim,N,u,u_new);
+            axpy(u_new,-1,u_new,f,vec_size);
+            axpy(u_new,0.6/2*h*h,u_new,u,vec_size);
+
         }
 
         // Swap u and u_new for the next iteration
