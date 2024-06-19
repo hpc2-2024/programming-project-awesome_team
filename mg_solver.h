@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "poisson_mat_vek.h"
-#include "smoother.h"
-#include "restriction.h"
-#include "prolongation.h"
+#include "src/poisson_mat_vek.h"
+#include "src/smoother.h"
+#include "src/restriction.h"
+#include "src/prolongation.h"
 
 
 // Simple Gaussian elimination solver for dense systems

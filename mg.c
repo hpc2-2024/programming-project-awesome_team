@@ -8,7 +8,7 @@ Execute with e.g.:
 #include <stdlib.h>
 #include <omp.h>
 #include <stdbool.h>
-#include "utils.h"
+#include "src/utils.h"
 #include "mg_solver.h"
 
 /*! The function f of the exercise sheet*/
