@@ -6,6 +6,30 @@
 #include <stdbool.h>
 #include <math.h>
 
+/////////// Multigrid specific utils
+
+/* Input number of inner points
+Output number of inner points of the next finer level*/
+int dim_finer(int N){
+    return N*2 + 1;
+}
+
+/* Input number of inner points
+Output number of inner points of the next coarser level*/
+int dim_coarser(int M){
+    return (M-1)/2;
+}
+
+int get_vec_size(int N, int dim, int ghostlayer){
+    if (ghostlayer!=0){
+        N = N+2;
+    }
+    int vec_size = pow(N,dim);
+    return vec_size;
+}
+
+/////////////////////
+
 /*! Calculating the dot (scalar) product of 2 vectors */
 double dot(double v[], double w[], int size) {
     double sum = 0;

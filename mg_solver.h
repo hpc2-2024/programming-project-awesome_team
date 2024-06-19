@@ -5,26 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "poisson_mat_vek.h"
+#include "smoother.h"
 
-/* Input number of inner points
-Output number of inner points of the next finer level*/
-int dim_finer(int N){
-    return N*2 + 1;
-}
 
-/* Input number of inner points
-Output number of inner points of the next coarser level*/
-int dim_coarser(int M){
-    return (M-1)/2;
-}
-
-int get_vec_size(int N, int dim, int ghostlayer){
-    if (ghostlayer!=0){
-        N = N+2;
-    }
-    int vec_size = pow(N,dim);
-    return vec_size;
-}
 
 void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N, int dim){
     int M_pad = M+2;
@@ -115,42 +98,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
     }
 }
 
-// Function to perform Jacobi smoothing
-void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
-    int i, j, k;
-    double h = 1.0/(N+1);
-    int N_with_ghosts = N + 2;
-    int vec_size = get_vec_size(N,dim,1);
-    double *u_new = (double *)malloc(vec_size * sizeof(double));
-    null_vec(u_new,vec_size);
 
-    // Jacobi iteration
-    for (k = 0; k < v; k++) {
-        // Copy u to u_new (needed for the Jacobi update)
-        memcpy(u_new, u, vec_size * sizeof(double));
-
-        if (dim==2) {
-            poisson_mat_vek(dim,N,u,u_new);
-            axpy(u_new,-1,u_new,f,vec_size);
-            axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
-
-        } else if (dim==1) {
-            poisson_mat_vek(dim,N,u,u_new);
-            axpy(u_new,-1,u_new,f,vec_size);
-            axpy(u_new,0.6/2*h*h,u_new,u,vec_size);
-
-        }
-
-        // Swap u and u_new for the next iteration
-        memcpy(u, u_new, vec_size * sizeof(double));
-    }
-
-    free(u_new);
-}
-
-void smooth(double u[], double f[], int N, int v,int dim) {
-    smooth_jacobi(u, f, N, v, dim);
-}
 
 // Simple Gaussian elimination solver for dense systems
 void gaussian_elimination(double A[], double b[], double x[], int n) {
