@@ -129,18 +129,9 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
         memcpy(u_new, u, vec_size * sizeof(double));
 
         if (dim==2) {
-
-        for (i = 1; i <= N; i++) {
-            for (j = 1; j <= N; j++) {
-                u_new[i * N_with_ghosts + j] = 0.25 * (
-                    u[(i-1) * N_with_ghosts + j] + // up
-                    u[(i+1) * N_with_ghosts + j] + // down
-                    u[i * N_with_ghosts + (j-1)] + // left
-                    u[i * N_with_ghosts + (j+1)]  // right
-                     * h * h* f[i * N_with_ghosts + j])     // source term
-                    ;
-            }
-        }
+            poisson_mat_vek(dim,N,u,u_new);
+            axpy(u_new,-1,u_new,f,vec_size);
+            axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
 
         } else if (dim==1) {
             poisson_mat_vek(dim,N,u,u_new);
