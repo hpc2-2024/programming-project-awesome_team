@@ -1,3 +1,6 @@
+#ifndef POISSON_MAT_VEK
+#define POISSON_MAT_VEK
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -49,3 +52,5 @@ void poisson_mat_vek(int dim, int N, double r[], double y[]){
         }
     }
 }
+
+#endif

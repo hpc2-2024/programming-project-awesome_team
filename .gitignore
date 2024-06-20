@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 note
 mg
 test
 pcg
-=======
 *.exe
 .vscode/*
 *.pdf
 *.json
->>>>>>> 16-bugfix-multigrid
