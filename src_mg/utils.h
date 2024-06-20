@@ -6,30 +6,6 @@
 #include <stdbool.h>
 #include <math.h>
 
-/////////// Multigrid specific utils
-
-/* Input number of inner points
-Output number of inner points of the next finer level*/
-int dim_finer(int N){
-    return N*2 + 1;
-}
-
-/* Input number of inner points
-Output number of inner points of the next coarser level*/
-int dim_coarser(int M){
-    return (M-1)/2;
-}
-
-int get_vec_size(int N, int dim, int ghostlayer){
-    if (ghostlayer!=0){
-        N = N+2;
-    }
-    int vec_size = pow(N,dim);
-    return vec_size;
-}
-
-/////////////////////
-
 /*! Calculating the dot (scalar) product of 2 vectors */
 double dot(double v[], double w[], int size) {
     double sum = 0;
@@ -104,6 +80,54 @@ void rand_vec_1d(double x[], int N){
         x[i]=r;
     }
 }
+/////////// Multigrid specific utils
+
+/* Input number of inner points
+Output number of inner points of the next finer level*/
+int dim_finer(int N){
+    return N*2 + 1;
+}
+
+/* Input number of inner points
+Output number of inner points of the next coarser level*/
+int dim_coarser(int M){
+    return (M-1)/2;
+}
+
+int get_vec_size(int N, int dim, int ghostlayer){
+    if (ghostlayer!=0){
+        N = N+2;
+    }
+    int vec_size = pow(N,dim);
+    return vec_size;
+}
+
+double** allocate_multigrid(int N, int levels, int dim) {
+    double** grid = (double**)malloc(levels * sizeof(double*));
+    int Nlevel = N;
+    int vec_size_pad = get_vec_size(N, dim, 1);
+
+    for (int i = levels - 1; i >= 0; i--){
+        grid[i] = (double*)malloc( vec_size_pad * sizeof(double));
+        null_vec(grid[i], vec_size_pad );
+
+        Nlevel = dim_coarser(Nlevel);
+        vec_size_pad = get_vec_size(Nlevel, dim, 1);
+    }
+    return grid;
+}
+
+void free_multigrid(double **grid, int levels) {
+    for (int i = 0; i < levels; i++){
+        free(grid[i]);
+    }
+    free(grid);
+}
+
+/////////////////////
+
+
+
 
 ///// FUNCTIONS FOR PRINTING VECTORS AND MATRICES /////////////
 

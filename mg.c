@@ -39,62 +39,29 @@ void init_b_1d(double b[], int N){
 }
 
 void mg_1dim(int N, int levels, int v){
-    int vec_ghost = (N+2); //vector size of smallest grid with ghost layer
 
-    //init u
-    double** u = (double**)malloc(levels*sizeof(double*));
-    int Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        u[i]=(double*)malloc( (Nlevel+2) * sizeof(double) );
-        null_vec(u[i], Nlevel+2);
-        Nlevel=dim_coarser(Nlevel);
-    }
+    double** u = allocate_multigrid(N, levels, 1);
+    double** f = allocate_multigrid(N, levels, 1);
+
     rand_vec_1d(u[levels-1],N);
-    
-
-    //init f
-    double** f = (double**)malloc(levels*sizeof(double*));
-    Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        f[i]=(double*)malloc( (Nlevel+2) * sizeof(double) );
-        null_vec(f[i], Nlevel+2);
-        Nlevel=dim_coarser(Nlevel);
-    }
     init_b_1d(f[levels-1],N);
     
     mg_solve(u,f,N,levels,v,1);
 
     //Speicherfregeben
-    for (int i=0;i<levels;i++){
-        free(u[i]);
-    }
-    free(u);
+    free_multigrid(u,levels);
+    free_multigrid(f,levels);
 
 }
 
 void mg_2dim(int N, int levels, int v){
     int vec_ghost = (N+2)*(N+2); //vector size of smallest grid with ghost layer
 
-    // init u (the vector we are solving for)
-    double** u;
-    u = (double**)malloc(levels*sizeof(double*));
-    int Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        u[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
-        null_vec(u[i], pow( Nlevel+2 , 2));
-        Nlevel=dim_coarser(Nlevel);
-    }
+    double** u = allocate_multigrid(N, levels, 2);
+    double** f = allocate_multigrid(N, levels, 2);
+
     rand_vec(u[levels-1],N);
 
-    // init right hand side
-    double **f;
-    f = (double**)malloc(levels*sizeof(double*));
-    Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        f[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
-        null_vec(f[i], pow( Nlevel+2 , 2));
-        Nlevel=dim_coarser(Nlevel);
-    }
     init_b(f[levels-1],N);
 
     
@@ -108,14 +75,8 @@ void mg_2dim(int N, int levels, int v){
     printf("Number of grids, levels = %d\n",levels);
     printf("Number of smoothing iterations, v = %d\n",v);
 
-    // Free memory
-    for (int i=0;i<levels;i++){
-        free(u[i]);
-    }   
-    for (int i=0;i<levels;i++){
-        free(f[i]);
-    }
-    free(f);
+    free_multigrid(u,levels);
+    free_multigrid(f,levels);
 }
 
 int main (int argc, char** argv){
