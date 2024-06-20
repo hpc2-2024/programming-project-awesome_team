@@ -40,9 +40,9 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         iter_max = 1;
         printf("Max v cycle iterations: %d\n",iter_max);
         
-        vec_print(N,u[levels-1],"u_0");
-        vec_print(N,f[levels-1],"f_0");
-        vec_print(N,r,"r_0");
+        print_vector(u[levels-1],N,dim,1, "u after 1 iteration (finest level)");
+        print_vector(f[levels-1],N,dim,1, "f after 1 iteration (finest level)");
+        print_vector(r,N,dim,1, "residuum after 1 iteration: ");
     }
     
     do {
