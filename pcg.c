@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include "utils.h"
-#include "preconditioner.h"
+#include "src_mg/poisson_mat_vek.h"
+#include "src_mg/utils.h"
+#include "src_pcg/preconditioner.h"
 
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){

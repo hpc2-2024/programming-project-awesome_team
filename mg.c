@@ -8,8 +8,19 @@ Execute with e.g.:
 #include <stdlib.h>
 #include <omp.h>
 #include <stdbool.h>
-#include "utils.h"
-#include "mg_solver.h"
+#include "src_mg/utils.h"
+#include "src_mg/mg_solver.h"
+
+void print_usage() {
+    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
+    printf("E.g.: ./mg 2 19 2 2\n");
+    printf("The dimension must be 1 or 2.\n");
+}
+
+bool is_valid_input(int N, int levels) {
+    int k = pow(2, levels - 1);
+    return (N - (k - 1)) % k == 0;
+}
 
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){
@@ -20,87 +31,53 @@ double fun_solution(double x, double y){
     return sin(x*M_PI)*sin(y*M_PI);
 }
 
-void init_b(double b[],int N){
+void init_b(double b[],int N, int dim){
     double h = 1.0/(N+1);
     double h2 = h * h;
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
-        for (int j = 1;j<N+1;j++){
-            b[(N+2)*i+j]=fun(i*h,j*h); 
+        if (dim==2) {
+            for (int j = 1;j<N+1;j++){
+                b[(N+2)*i+j]=fun(i*h,j*h); 
+            }
+        }
+        else {
+            b[i]=1.0;  
         }
     }
 }
 
-void init_b_1d(double b[], int N){
-    double h = 1.0/(N+1);
-    for (int i = 1;i<N+1;i++) {
-        b[i]=1.0;  
+int main (int argc, char** argv){
+
+    if (argc != 5) {
+        print_usage();
+        return 1;
     }
-}
 
-void mg_1dim(int N, int levels, int v){
-    int vec_ghost = (N+2); //vector size of smallest grid with ghost layer
+    int dimension = atoi(argv[1]);
+    int N = atoi(argv[2]);
+    int levels = atoi(argv[3]);
+    int v = atoi(argv[4]);
 
-    //init u
-    double** u = (double**)malloc(levels*sizeof(double*));
-    int Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        u[i]=(double*)malloc( (Nlevel+2) * sizeof(double) );
-        null_vec(u[i], Nlevel+2);
-        Nlevel=dim_coarser(Nlevel);
+    if (dimension != 1 && dimension != 2) {
+        print_usage();
+        return 1;
     }
-    rand_vec_1d(u[levels-1],N);
-    
 
-    //init f
-    double** f = (double**)malloc(levels*sizeof(double*));
-    Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        f[i]=(double*)malloc( (Nlevel+2) * sizeof(double) );
-        null_vec(f[i], Nlevel+2);
-        Nlevel=dim_coarser(Nlevel);
+    if (!is_valid_input(N, levels)) {
+        printf("Error: (N - (2^(levels-1) - 1)) must be divisible by 2^(levels-1).\n");
+        printf("E.g.: N = 7, 15, 31, 63, 127, ... can have multiple levels \n");
+        printf("This ensures that the number of points in the coarsest grid is an integer.\n");
+        return 1;
     }
-    init_b_1d(f[levels-1],N);
-    
-    mg_solve(u,f,N,levels,v,1);
 
-    //Speicherfregeben
-    for (int i=0;i<levels;i++){
-        free(u[i]);
-    }
-    free(u);
+    double** u = allocate_multigrid(N, levels, dimension);
+    double** f = allocate_multigrid(N, levels, dimension);
 
-}
+    rand_vec(u[levels-1], N, dimension);
+    init_b(f[levels-1], N, dimension);
 
-void mg_2dim(int N, int levels, int v){
-    int vec_ghost = (N+2)*(N+2); //vector size of smallest grid with ghost layer
-
-    // init u (the vector we are solving for)
-    double** u;
-    u = (double**)malloc(levels*sizeof(double*));
-    int Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        u[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
-        null_vec(u[i], pow( Nlevel+2 , 2));
-        Nlevel=dim_coarser(Nlevel);
-    }
-    rand_vec(u[levels-1],N);
-
-    // init right hand side
-    double **f;
-    f = (double**)malloc(levels*sizeof(double*));
-    Nlevel = N;
-    for (int i=levels-1;i>=0;i--){
-        f[i]=(double*)malloc( pow( Nlevel+2 , 2) * sizeof(double) );
-        null_vec(f[i], pow( Nlevel+2 , 2));
-        Nlevel=dim_coarser(Nlevel);
-    }
-    init_b(f[levels-1],N);
-
-    
-    mg_solve(u,f,N,levels,v,2);
-
-
+    mg_solve(u,f,N,levels,v,dimension);
 
     //Output
     printf("\n");
@@ -108,58 +85,8 @@ void mg_2dim(int N, int levels, int v){
     printf("Number of grids, levels = %d\n",levels);
     printf("Number of smoothing iterations, v = %d\n",v);
 
-    // Free memory
-    for (int i=0;i<levels;i++){
-        free(u[i]);
-    }   
-    for (int i=0;i<levels;i++){
-        free(f[i]);
-    }
-    free(f);
-}
-
-int main (int argc, char** argv){
-    // Variables init
-    int N=23;
-    int levels=2;
-    int v=3;
-    int dimension = 2;
-    
-    if (argc>4){
-        dimension = atoi(argv[1]);
-        N = atoi(argv[2]);
-        levels = atoi(argv[3]);
-        v = atoi(argv[4]);
-        int k = pow(2,levels-1);
-        if ((N-(k-1))%k!=0){
-            printf("(N - 2^(levels-1) -1)/2^(levels-1) has to be an integer (since this is the number of points in the coarsest grid)");
-            exit(0);
-        }
-        if (dimension!=1 && dimension!=2){
-            printf("Execute file with the following params: dimension - gridsize N - levels - smoothing steps \nE.g. 2 19 2 2\n");
-            printf("The dimension has to be 1 or 2\n");
-        }
-    }
-    else if (argc>2){ // optional gridsize N and number of levels 
-        N = atoi(argv[1]);
-        levels = atoi(argv[2]);
-        int k = pow(2,levels-1);
-        if ((N-k-1)%k!=0){
-            printf("(N - 2^(levels-1) -1)/2^(levels-1) has to be an integer (since this is the number of points in the coarsest grid)");
-            exit(0);
-        }
-    }
-    else {
-        printf("execute file with the following params: dimension - gridsize N - levels - smoothing steps \nE.g. 2 19 2 2\n");
-    }
-
-    if (dimension == 2) {
-        mg_2dim(N,levels,v);
-    } 
-    else {
-        printf("1 dim mg\n");
-        mg_1dim(N,levels,v);
-    }
+    free_multigrid(u,levels);
+    free_multigrid(f,levels);
 
     return 0;
 
