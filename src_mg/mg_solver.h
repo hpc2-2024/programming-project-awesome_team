@@ -4,10 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "src/vcycle.h"
-#include "src/poisson_mat_vek.h"
+#include "vcycle.h"
+#include "poisson_mat_vek.h"
 
 
+/**
+ * @brief Solves a linear system using the multigrid method.
+ *
+ * Solves the linear system by performing multiple V-cycles until convergence or maximum iterations are reached.
+ *
+ * @param u The solution vectors for each level of the grid hierarchy.
+ * @param f The right-hand side vectors for each level of the grid hierarchy.
+ * @param N The number of internal points in the finest grid.
+ * @param levels The number of levels in the multigrid hierarchy.
+ * @param v The number of pre- and post-smoothing steps.
+ * @param dim The dimension of the problem (1 or 2).
+ */
 void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
     int iter_max = 200;
     int iter = 0;

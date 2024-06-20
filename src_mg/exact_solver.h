@@ -4,7 +4,16 @@
 #include "math.h"
 #include "utils.h"
 
-// Simple Gaussian elimination solver for dense systems
+/**
+ * @brief Performs Gaussian elimination to solve a dense linear system.
+ *
+ * Solves the system of linear equations Ax = b using Gaussian elimination with partial pivoting.
+ *
+ * @param A The coefficient matrix of size n x n (no ghostlayer).
+ * @param b The right-hand side vector of size n (no ghostlayer).
+ * @param x The solution vector of size n.
+ * @param n The number of equations (size of the matrix and vectors).
+ */
 void gaussian_elimination(double A[], double b[], double x[], int n) {
     int i, j, k;
     for (i = 0; i < n; i++) {
@@ -42,7 +51,16 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
     }
 }
 
-// Function to solve the 2D Poisson problem with ghost layers
+/**
+ * @brief Solves the 2D Poisson equation using Gaussian elimination.
+ *
+ * Solves the 2D Poisson equation on a grid with ghost layers by constructing the linear system
+ * and solving it using Gaussian elimination.
+ *
+ * @param u The solution vector with ghost layers.
+ * @param f The right-hand side vector with ghost layers.
+ * @param N The number of internal points in each dimension.
+ */
 void exact_solve_poisson_2D(double u[], double f[], int N) {
     int i, j, k;
     double h = 1.0/(N+1);
@@ -91,6 +109,16 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
     free(temp_u);
 }
 
+/**
+ * @brief Solves the 1D Poisson equation using Gaussian elimination.
+ *
+ * Solves the 1D Poisson equation on a grid with ghost layers by constructing the linear system
+ * and solving it using Gaussian elimination.
+ *
+ * @param u The solution vector with ghost layers.
+ * @param f The right-hand side vector with ghost layers.
+ * @param N The number of internal points.
+ */
 void exact_solve_poisson_1D(double u[], double f[], int N){
     int NN = N * N;
     double h = 1.0/(N+1);
@@ -123,6 +151,17 @@ void exact_solve_poisson_1D(double u[], double f[], int N){
 
 }
 
+/**
+ * @brief Solves the Poisson equation (1D or 2D) using Gaussian elimination.
+ *
+ * Determines the dimension of the problem and calls the appropriate function to solve
+ * the Poisson equation using Gaussian elimination.
+ *
+ * @param u The solution vector with ghost layers.
+ * @param f The right-hand side vector with ghost layers.
+ * @param N The number of internal points.
+ * @param dim Dimension of the problem (1 or 2).
+ */
 void exact_solve(double u[], double f[], int N, int dim){
     if (dim==2){
         exact_solve_poisson_2D(u,f,N);

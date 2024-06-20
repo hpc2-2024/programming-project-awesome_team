@@ -11,6 +11,22 @@
 #include "exact_solver.h"
 
 
+/**
+ * @brief Performs a V-cycle multigrid method for solving a linear system.
+ *
+ * Implements a V-cycle for solving a linear system using multigrid methods.
+ * The method involves smoothing, restriction, exact solve on the coarsest grid, prolongation, and correction.
+ *
+ * @param u Array of solution vectors for each grid level.
+ * @param f Array of right-hand side vectors for each grid level.
+ * @param N_start Number of internal points in the finest grid.
+ * @param levels Number of multigrid levels.
+ * @param v Number of smoothing iterations at each level.
+ * @param dim Dimension of the problem (1 or 2).
+ * @param debug Flag for enabling debug output (1 to enable, 0 to disable).
+ *
+ * @note Arrays `u` and `f` should be pre-allocated for each level.
+ */
 void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int debug){
     int vec_size;
     int N = N_start;

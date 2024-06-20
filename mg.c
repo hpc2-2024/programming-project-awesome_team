@@ -8,8 +8,8 @@ Execute with e.g.:
 #include <stdlib.h>
 #include <omp.h>
 #include <stdbool.h>
-#include "src/utils.h"
-#include "mg_solver.h"
+#include "src_mg/utils.h"
+#include "src_mg/mg_solver.h"
 
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){
