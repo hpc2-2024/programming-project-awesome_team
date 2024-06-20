@@ -83,8 +83,6 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         // Apply Prolongation
         prolongation_simple(u[l-1], N, u_temp, N_finer,dim);
 
-        // print_matrix(N_finer + 2, u_temp);
-
         // correction
         axpy(u[l], 1, u[l], u_temp, vec_size_finer);
 
@@ -93,6 +91,39 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
 
         N = N_finer;
         free(u_temp);
+    }
+}
+
+
+void f_cycle(double **u, double **f, int N_start, int levels, int v, int dim, int debug) {
+    int N_coarsest = N_start;
+    for (int k=levels-2; k>=0; k--){
+        N_coarsest = dim_coarser(N_coarsest);
+    }
+    int N = N_coarsest;
+    // Pre-smoothing phase
+    for (int k = 0; k < levels; k++) {
+        // Perform v iterations of V-cycle on u[k]
+        v_cycle(u, f, N, k+1, v, dim, debug);
+        int N_finer = dim_finer(N);
+        
+
+        if (k < levels - 1) {
+            // init temporary vector  
+            double *u_temp;
+            u_temp = malloc(get_vec_size(N_finer,dim,1) * sizeof(*u_temp));
+            null_vec(u_temp, get_vec_size(N_finer,dim,1));
+
+            // Apply Prolongation
+            prolongation_simple(u[k], N, u_temp, N_finer,dim);
+
+            // correction
+            axpy(u[k+1], 1, u[k+1], u_temp, get_vec_size(N_finer, dim, 1));
+
+            free(u_temp);
+        }
+
+        N = N_finer;
     }
 }
 

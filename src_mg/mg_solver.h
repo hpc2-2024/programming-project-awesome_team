@@ -49,7 +49,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         iter += 1;
 
         // Perform a V-cycle to update the solution
-        v_cycle(u, f, N, levels, v, dim, debug);
+        f_cycle(u, f, N, levels, v, dim, debug);
 
 
         // clean up f
