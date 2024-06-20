@@ -59,27 +59,28 @@ void ones(double array[], int arrSize){
 fills array with ghostlayer with random numbers in (0,1) intervall
 the borders will be kept 0
 */
-void rand_vec(double x[], int N){
+void rand_vec(double x[], int N, int dim){
     int seed = 123456;
     for (int i = 1;i<N+1;i++) {
-        for (int j = 1;j<N+1;j++){
+
+        if (dim==2) {
+            for (int j = 1;j<N+1;j++){
+                // randomly initialize x with values in (0,1)
+                srand(seed + i);
+                double r = (double)rand() / (double)RAND_MAX;
+                x[(N+2)*i+j]=r;
+            }
+        }
+        else if (dim==1) {
             // randomly initialize x with values in (0,1)
             srand(seed + i);
             double r = (double)rand() / (double)RAND_MAX;
-            x[(N+2)*i+j]=r;
+            x[i]=r;
         }
 
     }
 }
-void rand_vec_1d(double x[], int N){
-    int seed = 123456;
-    for (int i = 1;i<N+1;i++) {
-        // randomly initialize x with values in (0,1)
-        srand(seed + i);
-        double r = (double)rand() / (double)RAND_MAX;
-        x[i]=r;
-    }
-}
+
 /////////// Multigrid specific utils
 
 /* Input number of inner points
