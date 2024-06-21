@@ -65,10 +65,6 @@ int main (int argc, char** argv){
         }
     }
 
-    if (measure_time==1) {
-        printf("detected flag -time \n");
-    }
-
     if (argc != 5) {
         print_usage();
         return 1;
@@ -99,7 +95,20 @@ int main (int argc, char** argv){
     rand_vec(u[levels-1], N, dimension);
     init_b(f[levels-1], N, dimension);
 
+    // Start timing if -time flag is set
+    clock_t start_time, end_time;
+    if (measure_time) {
+        start_time = clock();
+    }
+
     mg_solve(u,f,N,levels,v,dimension);
+
+    // End timing if -time flag is set
+    if (measure_time) {
+        end_time = clock();
+        double time_taken = (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10 but for my computer is necessary to get the correct time in seconds
+        printf("Time taken by mg_solve: %f seconds\n", time_taken);
+    }
 
     //Output
     printf("\n");
