@@ -67,7 +67,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcyc
         }
 
         // Update residual
-        poisson_mat_vek(dim,N, u[levels - 1], r);                //r=Au
+        poisson_mat_vek(dim,N, u[levels - 1], r, 0);                //r=Au
         axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-r
 
         err = norm(r, vec_size);

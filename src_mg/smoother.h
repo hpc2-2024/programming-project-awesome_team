@@ -34,12 +34,12 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
         memcpy(u_new, u, vec_size * sizeof(double));
 
         if (dim==2) {
-            poisson_mat_vek(dim,N,u,u_new);
+            poisson_mat_vek(dim,N,u,u_new, 0);
             axpy(u_new,-1,u_new,f,vec_size);
             axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
 
         } else if (dim==1) {
-            poisson_mat_vek(dim,N,u,u_new);
+            poisson_mat_vek(dim,N,u,u_new, 0);
             axpy(u_new,-1,u_new,f,vec_size);
             axpy(u_new,0.6/2*h*h,u_new,u,vec_size);
 

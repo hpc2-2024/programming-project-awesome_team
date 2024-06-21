@@ -48,7 +48,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         }
 
         // Compute Residual
-        poisson_mat_vek(dim,N,u[l],r);
+        poisson_mat_vek(dim,N,u[l],r, 0);
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
