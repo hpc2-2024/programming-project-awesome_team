@@ -23,11 +23,12 @@
  * @param levels Number of multigrid levels.
  * @param v Number of smoothing iterations at each level.
  * @param dim Dimension of the problem (1 or 2).
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  * @param debug Flag for enabling debug output (1 to enable, 0 to disable).
  *
  * @note Arrays `u` and `f` should be pre-allocated for each level.
  */
-void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int debug){
+void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, int use_stencil9, int debug){
     int vec_size;
     int N = N_start;
 
@@ -41,14 +42,14 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         null_vec(r,vec_size);
 
         // Apply Smoothing
-        smooth(u[l], f[l], N, v, dim);
+        smooth(u[l], f[l], N, v, dim, use_stencil9);
         if (debug==1){
             printf("u_%d after smoothing:\n",l);
             vec_print(N,u[l],"u");
         }
 
         // Compute Residual
-        poisson_mat_vek(dim,N,u[l],r);
+        poisson_mat_vek(dim,N,u[l],r, use_stencil9);
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
@@ -66,7 +67,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         free(r);
     }
 
-    exact_solve(u[0],f[0],N,dim);
+    exact_solve(u[0],f[0],N,dim, use_stencil9);
 
     for (int l=1;l<levels;l++){
         vec_size = get_vec_size(N,dim,1);
@@ -87,7 +88,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         axpy(u[l], 1, u[l], u_temp, vec_size_finer);
 
         // Smoothing
-        smooth(u[l], f[l], N_finer, v, dim);
+        smooth(u[l], f[l], N_finer, v, dim, use_stencil9);
 
         N = N_finer;
         free(u_temp);
@@ -95,7 +96,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
 }
 
 
-void f_cycle(double **u, double **f, int N_start, int levels, int v, int dim, int debug) {
+void f_cycle(double **u, double **f, int N_start, int levels, int v, int dim, int use_stencil9, int debug) {
     int N_coarsest = N_start;
     for (int k=levels-2; k>=0; k--){
         N_coarsest = dim_coarser(N_coarsest);
@@ -104,7 +105,7 @@ void f_cycle(double **u, double **f, int N_start, int levels, int v, int dim, in
     // Pre-smoothing phase
     for (int k = 0; k < levels; k++) {
         // Perform v iterations of V-cycle on u[k]
-        v_cycle(u, f, N, k+1, v, dim, debug);
+        v_cycle(u, f, N, k+1, v, dim, use_stencil9, debug);
         int N_finer = dim_finer(N);
         
 
