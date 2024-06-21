@@ -61,6 +61,35 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
     free(u_new);
 }
 
+void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim){
+    int N_pad = N + 2; 
+    int X_size = get_vec_size(N, dim, 1); // (N+2) * (N+2)
+    
+    double h = 1.0/(N+1);
+    double h2 = h*h;
+
+    // double *X_new;
+    // X_new = malloc(X_size * sizeof(*X_new));
+
+    int iter;
+    for (iter = 0; iter < v; iter++) {
+
+        for (int i = 1; i < N_pad-1; i++){
+            for(int j = 1; j < N_pad; j++){
+                double sum = 0.0;
+
+                sum = - X[i * N_pad + (j+1)] 
+                      - X[i * N_pad + (j-1)] 
+                      - X[(i+1) * N_pad + j] 
+                      - X[(i-1) * N_pad + j];
+                
+                sum = sum / h2;
+                X[i * N_pad + j] = (B[i * N_pad + j] - sum) / (4 / h2);
+            }
+        }
+    }
+}
+
 /**
  * @brief Smooths the input vector `u` using Jacobi smoothing.
  *
@@ -75,7 +104,8 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
  * @note Vectors `u` and `f` should be pre-allocated to the appropriate sizes.
  */
 void smooth(double u[], double f[], int N, int v,int dim, int use_stencil9) {
-    smooth_jacobi(u, f, N, v, dim, use_stencil9);
+    // smooth_jacobi(u, f, N, v, dim, use_stencil9);
+    smooth_gauss_seidel(u, f, N, v, dim);
 }
 
 #endif

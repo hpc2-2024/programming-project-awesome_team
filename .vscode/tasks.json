@@ -8,6 +8,7 @@
                 "-g2",
                 "-lm",
                 "-fopenmp",
+                "-I/home/aleph/Desktop/SoSe24/advanced-hpc/exercises/project/src_mg",
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}.exe",
