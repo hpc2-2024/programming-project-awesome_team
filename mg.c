@@ -110,10 +110,10 @@ int main (int argc, char** argv){
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
             mg_solve(u, f, N, levels, v, dimension);
-            rand_vec(u[levels-1], N, dimension);
-            init_b(f[levels-1], N, dimension);
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
+            rand_vec(u[levels-1], N, dimension);
+            init_b(f[levels-1], N, dimension);
         }
         double avg_time_taken = total_time / 10;
         printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
