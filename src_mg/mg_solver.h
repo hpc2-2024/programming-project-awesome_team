@@ -21,11 +21,13 @@
  * @param dim The dimension of the problem (1 or 2).
  * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int print_error){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int print_error, int *num_iterations, double *final_error, int *converged){
     int iter_max = 200;
     int iter = 0;
     double err;
     double epsilon=0.0001;
+
+    *converged = 1;
 
     int vec_size = get_vec_size(N,dim,1);
 
@@ -75,11 +77,14 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcyc
             printf("Error: %f\n",err);
         }
         if (iter>iter_max){
-            printf("Multigrid solve stopped after %d iter without convergence.", iter);
+            *converged = 0;
+            // printf("Multigrid solve stopped after %d iter without convergence.", iter);
             break;
         }
     } while (err > epsilon);
     
+    *num_iterations = iter;
+    *final_error = err;
     free(r);
     // solution:
 }

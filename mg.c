@@ -96,11 +96,21 @@ int main (int argc, char** argv){
     int levels = atoi(argv[arg_index++]);
     int v = atoi(argv[arg_index++]);
 
+    printf("\nArguments:\n");
+    printf("Grid size, N = %d\n", N);
+    printf("Number of grids, levels = %d\n", levels);
+    printf("Dimension = %d\n", dimension);
+    printf("Number of smoothing iterations, v = %d\n", v);
+    printf("F-cycle used = %s\n\n", fcycle ? "yes" : "no");
+
     if (dimension != 1 && dimension != 2) {
         print_usage();
         printf("\n Input was dimension of %d \n", dimension);
         return 1;
     }
+
+            // printf("Error at iteration %d  : %f\n", iter, err);
+
 
     if (!is_valid_input(N, levels)) {
         printf("Error: (N - (2^(levels-1) - 1)) must be divisible by 2^(levels-1).\n");
@@ -115,39 +125,47 @@ int main (int argc, char** argv){
     rand_vec(u[levels-1], N, dimension);
     init_b(f[levels-1], N, dimension);
 
+    int num_iterations = 0;
+    double final_error = 0.0;
+    int converged = 0;
+
+    double avg_time_taken, time_taken = 0.0;
     if (measure_avg_time) {
         // Measure average time for running mg_solve 10 times
         double total_time = 0;
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
-            mg_solve(u, f, N, levels, v, dimension, fcycle, 0);
+            mg_solve(u, f, N, levels, v, dimension, fcycle, 0, &num_iterations, &final_error, &converged);
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
             rand_vec(u[levels-1], N, dimension);
             init_b(f[levels-1], N, dimension);
         }
-        double avg_time_taken = total_time / 10;
-        printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
+        avg_time_taken = total_time / 10;
     } else if (measure_time) {
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
-        mg_solve(u, f, N, levels, v, dimension, fcycle, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, 1, &num_iterations, &final_error, &converged);
         clock_t end_time = clock();
-        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
-        printf("Time taken by mg_solve: %f seconds\n", time_taken);
+        time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
     } else {
-        mg_solve(u, f, N, levels, v, dimension, fcycle, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, 1, &num_iterations, &final_error, &converged);
     }
 
-    //Output
-    printf("\n");
-    printf("Grid size, N = %d\n",N);
-    printf("Number of grids, levels = %d\n",levels);
-    printf("Number of smoothing iterations, v = %d\n",v);
+    printf("\nResults:\n");
+    printf("Number of iterations = %d\n", num_iterations);
+    printf("Final error = %f\n", final_error);
+    printf("Converged = %s\n", converged ? "yes" : "no");
+
+    if(measure_avg_time){
+        printf("Average time taken by multiple runs of mg_solve(): %f seconds\n", avg_time_taken);
+    }
+    else if(measure_time){
+        printf("Time taken by single run of mg_solve(): %f seconds\n", time_taken);
+    }
 
     free_multigrid(u,levels);
     free_multigrid(f,levels);
 
     return 0;
-
 }

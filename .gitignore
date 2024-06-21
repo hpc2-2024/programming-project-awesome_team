@@ -3,6 +3,6 @@ mg
 test
 pcg
 *.exe
-.vscode/*
+.vscode/
 *.pdf
 *.json
