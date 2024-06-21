@@ -51,9 +51,11 @@ void init_b(double b[],int N, int dim){
 }
 
 int main (int argc, char** argv){
+    // optional flags
     int measure_time = 0;
+    int measure_avg_time = 0;
     
-    // Check for -time flag
+    // Check for -time and -avg_time flags
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-time") == 0) {
             measure_time = 1;
@@ -61,7 +63,14 @@ int main (int argc, char** argv){
                 argv[j] = argv[j + 1];
             }
             argc--;  // reduce argument count
-            break;
+            i--;  // adjust index to recheck the current position
+        } else if (strcmp(argv[i], "-avg_time") == 0) {
+            measure_avg_time = 1;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;  // reduce argument count
+            i--;  // adjust index to recheck the current position
         }
     }
 
@@ -95,19 +104,28 @@ int main (int argc, char** argv){
     rand_vec(u[levels-1], N, dimension);
     init_b(f[levels-1], N, dimension);
 
-    // Start timing if -time flag is set
-    clock_t start_time, end_time;
-    if (measure_time) {
-        start_time = clock();
-    }
-
-    mg_solve(u,f,N,levels,v,dimension);
-
-    // End timing if -time flag is set
-    if (measure_time) {
-        end_time = clock();
-        double time_taken = (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10 but for my computer is necessary to get the correct time in seconds
+    if (measure_avg_time) {
+        // Measure average time for running mg_solve 10 times
+        double total_time = 0;
+        for (int i = 0; i < 10; i++) {
+            clock_t start_time = clock();
+            mg_solve(u, f, N, levels, v, dimension);
+            rand_vec(u[levels-1], N, dimension);
+            init_b(f[levels-1], N, dimension);
+            clock_t end_time = clock();
+            total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
+        }
+        double avg_time_taken = total_time / 10;
+        printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
+    } else if (measure_time) {
+        // Measure time for a single run of mg_solve
+        clock_t start_time = clock();
+        mg_solve(u, f, N, levels, v, dimension);
+        clock_t end_time = clock();
+        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
         printf("Time taken by mg_solve: %f seconds\n", time_taken);
+    } else {
+        mg_solve(u, f, N, levels, v, dimension);
     }
 
     //Output
