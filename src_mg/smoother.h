@@ -17,10 +17,11 @@
  * @param N Number of internal grid points.
  * @param v Number of smoothing iterations.
  * @param dim Dimension of the problem (1 or 2).
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  *
  * @note Vectors `u` and `f` should be pre-allocated to the appropriate sizes.
  */
-void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
+void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stencil9) {
     int i, j, k;
     double h = 1.0/(N+1);
     int N_with_ghosts = N + 2;
@@ -34,9 +35,17 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
         memcpy(u_new, u, vec_size * sizeof(double));
 
         if (dim==2) {
-            poisson_mat_vek(dim,N,u,u_new, 0);
-            axpy(u_new,-1,u_new,f,vec_size);
-            axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
+            if (use_stencil9 == 1) {
+                poisson_mat_vek(dim,N,u,u_new, use_stencil9);
+                axpy(u_new,-1,u_new,f,vec_size);
+                axpy(u_new,0.6/3 * 6 *h*h,u_new,u,vec_size);
+
+            }
+            else {
+                poisson_mat_vek(dim,N,u,u_new, 0);
+                axpy(u_new,-1,u_new,f,vec_size);
+                axpy(u_new,0.6/4*h*h,u_new,u,vec_size);
+            }
 
         } else if (dim==1) {
             poisson_mat_vek(dim,N,u,u_new, 0);
@@ -65,8 +74,8 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim) {
  *
  * @note Vectors `u` and `f` should be pre-allocated to the appropriate sizes.
  */
-void smooth(double u[], double f[], int N, int v,int dim) {
-    smooth_jacobi(u, f, N, v, dim);
+void smooth(double u[], double f[], int N, int v,int dim, int use_stencil9) {
+    smooth_jacobi(u, f, N, v, dim, use_stencil9);
 }
 
 #endif

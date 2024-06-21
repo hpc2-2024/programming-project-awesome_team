@@ -46,7 +46,7 @@ void poisson_mat_vek(int dim, int N, double r[], double y[], int stencil9){
         for (int i=1;i<N+1;i++){
             for (int j=1;j<N+1;j++){
                 if (stencil9 == 1) {
-                    y[(N+2)*i+j] =  pow(1.0/(6*h),2) * (4*r[(N+2)*i+j-1] - 20*r[(N+2)*i+j] + 4 * r[(N+2)*i+j+1] + 4 *  r[(N+2)*(i+1)+j] + r[N_pad*(i+1)+j+1] + r[N_pad*(i+1)+j-1] + 4* r[(N+2)*(i-1)+j] + r[N_pad*(i-1)+j+1] + r[N_pad*(i-1)+j-1]);
+                    y[(N+2)*i+j] = (1.0/6.0)* pow(1.0/(h),2) * (-0.5*r[(N+2)*i+j-1] + 3 *r[(N+2)*i+j] - 0.5 * r[(N+2)*i+j+1] - 0.5 *  r[(N+2)*(i+1)+j] -0.25 * r[N_pad*(i+1)+j+1] -0.25 * r[N_pad*(i+1)+j-1] - 0.5 * r[(N+2)*(i-1)+j] -0.25* r[N_pad*(i-1)+j+1] - 0.25 * r[N_pad*(i-1)+j-1]);
                 }
                 else {
                     y[(N+2)*i+j] = pow(1.0/h,2)*(4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1]);

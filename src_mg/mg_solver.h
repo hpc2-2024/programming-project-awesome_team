@@ -19,9 +19,10 @@
  * @param levels The number of levels in the multigrid hierarchy.
  * @param v The number of pre- and post-smoothing steps.
  * @param dim The dimension of the problem (1 or 2).
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int print_error){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int use_stencil9, int print_error){
     int iter_max = 200;
     int iter = 0;
     double err;
@@ -51,10 +52,10 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcyc
 
         // Perform a V-cycle to update the solution
         if (fcycle == 1) {
-            f_cycle(u, f, N, levels, v, dim, debug);
+            f_cycle(u, f, N, levels, v, dim, use_stencil9, debug);
         }
         else {
-            v_cycle(u, f, N, levels, v, dim, debug);
+            v_cycle(u, f, N, levels, v, dim, use_stencil9,debug);
         }
 
 
@@ -67,7 +68,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcyc
         }
 
         // Update residual
-        poisson_mat_vek(dim,N, u[levels - 1], r, 0);                //r=Au
+        poisson_mat_vek(dim,N, u[levels - 1], r, use_stencil9);                //r=Au
         axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-r
 
         err = norm(r, vec_size);
