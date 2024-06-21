@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
-#include "utils.h"
-#include "mg_solver.h"
+#include "src_mg/utils.h"
+#include "src_mg/mg_solver.h"
 // #include "./src_mg/mg_solver.h"
 
 
@@ -159,7 +159,7 @@ void test_jacobi_smoothing(){
     }
 
     // calculate new residual
-    mfMult(N, u, r);                //Au
+    poisson_mat_vek(2, N, u, r, 0);                //Au
     axpy(r, -1, r, b, vec_size);    //r= f-Au
 
     double err = norm(r,vec_size);
