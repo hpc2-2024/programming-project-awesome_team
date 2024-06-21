@@ -6,6 +6,7 @@ Execute with e.g.:
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <omp.h>
 #include <stdbool.h>
 #include "src_mg/utils.h"
@@ -15,6 +16,8 @@ void print_usage() {
     printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
     printf("E.g.: ./mg 2 19 2 2\n");
     printf("The dimension must be 1 or 2.\n");
+    printf("\nOptional flags: \n");
+    printf("-time: measures the runtime\n");
 }
 
 bool is_valid_input(int N, int levels) {
@@ -48,19 +51,38 @@ void init_b(double b[],int N, int dim){
 }
 
 int main (int argc, char** argv){
+    int measure_time = 0;
+    
+    // Check for -time flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-time") == 0) {
+            measure_time = 1;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;  // reduce argument count
+            break;
+        }
+    }
+
+    if (measure_time==1) {
+        printf("detected flag -time \n");
+    }
 
     if (argc != 5) {
         print_usage();
         return 1;
     }
 
-    int dimension = atoi(argv[1]);
-    int N = atoi(argv[2]);
-    int levels = atoi(argv[3]);
-    int v = atoi(argv[4]);
+    int arg_index = 1;
+    int dimension = atoi(argv[arg_index++]);
+    int N = atoi(argv[arg_index++]);
+    int levels = atoi(argv[arg_index++]);
+    int v = atoi(argv[arg_index++]);
 
     if (dimension != 1 && dimension != 2) {
         print_usage();
+        printf("\n Input was dimension of %d \n", dimension);
         return 1;
     }
 
