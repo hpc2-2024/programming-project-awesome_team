@@ -153,7 +153,7 @@ int main (int argc, char** argv){
     }
 
     printf("\nResults:\n");
-    printf("Number of iterations = %d\n", num_iterations);
+    printf("Number of iterations per run = %d\n", num_iterations);
     printf("Final error = %f\n", final_error);
     printf("Converged = %s\n", converged ? "yes" : "no");
 
