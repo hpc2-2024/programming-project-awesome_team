@@ -109,7 +109,7 @@ int main (int argc, char** argv){
         double total_time = 0;
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
-            mg_solve(u, f, N, levels, v, dimension);
+            mg_solve(u, f, N, levels, v, dimension, 0);
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
             rand_vec(u[levels-1], N, dimension);
@@ -120,12 +120,12 @@ int main (int argc, char** argv){
     } else if (measure_time) {
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
-        mg_solve(u, f, N, levels, v, dimension);
+        mg_solve(u, f, N, levels, v, dimension, 1);
         clock_t end_time = clock();
         double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
         printf("Time taken by mg_solve: %f seconds\n", time_taken);
     } else {
-        mg_solve(u, f, N, levels, v, dimension);
+        mg_solve(u, f, N, levels, v, dimension, 1);
     }
 
     //Output
