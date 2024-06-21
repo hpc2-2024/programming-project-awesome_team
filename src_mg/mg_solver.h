@@ -19,8 +19,9 @@
  * @param levels The number of levels in the multigrid hierarchy.
  * @param v The number of pre- and post-smoothing steps.
  * @param dim The dimension of the problem (1 or 2).
+ * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int print_error){
     int iter_max = 200;
     int iter = 0;
     double err;
@@ -49,7 +50,12 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         iter += 1;
 
         // Perform a V-cycle to update the solution
-        f_cycle(u, f, N, levels, v, dim, debug);
+        if (fcycle == 1) {
+            f_cycle(u, f, N, levels, v, dim, debug);
+        }
+        else {
+            v_cycle(u, f, N, levels, v, dim, debug);
+        }
 
 
         // clean up f
@@ -65,7 +71,9 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim){
         axpy(r, -1, r, f[levels - 1], vec_size);    //r= f-r
 
         err = norm(r, vec_size);
-        printf("Error: %f\n",err);
+        if (print_error==1) {
+            printf("Error: %f\n",err);
+        }
         if (iter>iter_max){
             printf("Multigrid solve stopped after %d iter without convergence.", iter);
             break;
