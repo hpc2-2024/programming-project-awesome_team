@@ -14,10 +14,12 @@ Execute with e.g.:
 
 void print_usage() {
     printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
-    printf("E.g.: ./mg 2 19 2 2\n");
-    printf("The dimension must be 1 or 2.\n");
+    printf("Example: ./mg 2 19 2 2\n");
+    printf("Note: The dimension must be 1 or 2.\n");
     printf("\nOptional flags: \n");
     printf("-time: measures the runtime\n");
+    printf("-avg_time: runs the multigrid solver 10 times and prints the average runtime\n");
+    printf("-fcycle: with this flag the multigrid method uses fcycle instead of vcycle\n");
 }
 
 bool is_valid_input(int N, int levels) {
@@ -54,6 +56,7 @@ int main (int argc, char** argv){
     // optional flags
     int measure_time = 0;
     int measure_avg_time = 0;
+    int fcycle = 0;
     
     // Check for -time and -avg_time flags
     for (int i = 1; i < argc; i++) {
@@ -66,6 +69,14 @@ int main (int argc, char** argv){
             i--;  // adjust index to recheck the current position
         } else if (strcmp(argv[i], "-avg_time") == 0) {
             measure_avg_time = 1;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;  // reduce argument count
+            i--;  // adjust index to recheck the current position
+        }
+        if (strcmp(argv[i], "-fcycle") == 0) {
+            fcycle = 1;
             for (int j = i; j < argc - 1; j++) {
                 argv[j] = argv[j + 1];
             }
@@ -109,7 +120,7 @@ int main (int argc, char** argv){
         double total_time = 0;
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
-            mg_solve(u, f, N, levels, v, dimension, 0);
+            mg_solve(u, f, N, levels, v, dimension, fcycle, 0);
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
             rand_vec(u[levels-1], N, dimension);
@@ -120,12 +131,12 @@ int main (int argc, char** argv){
     } else if (measure_time) {
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
-        mg_solve(u, f, N, levels, v, dimension, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, 1);
         clock_t end_time = clock();
         double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
         printf("Time taken by mg_solve: %f seconds\n", time_taken);
     } else {
-        mg_solve(u, f, N, levels, v, dimension, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, 1);
     }
 
     //Output

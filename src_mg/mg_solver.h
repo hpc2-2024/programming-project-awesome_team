@@ -21,7 +21,7 @@
  * @param dim The dimension of the problem (1 or 2).
  * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int print_error){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle, int print_error){
     int iter_max = 200;
     int iter = 0;
     double err;
@@ -50,7 +50,12 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int prin
         iter += 1;
 
         // Perform a V-cycle to update the solution
-        f_cycle(u, f, N, levels, v, dim, debug);
+        if (fcycle == 1) {
+            f_cycle(u, f, N, levels, v, dim, debug);
+        }
+        else {
+            v_cycle(u, f, N, levels, v, dim, debug);
+        }
 
 
         // clean up f
