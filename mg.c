@@ -20,7 +20,7 @@ void print_usage() {
     printf("-time: measures the runtime\n");
     printf("-avg_time: runs the multigrid solver 10 times and prints the average runtime\n");
     printf("-fcycle: with this flag the multigrid method uses fcycle instead of vcycle\n");
-    printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n")
+    printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n");
 }
 
 bool is_valid_input(int N, int levels) {
