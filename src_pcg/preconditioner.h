@@ -1,3 +1,6 @@
+#ifndef PRECONDITIONER
+#define PRECONDITIONER
+
 void lapl_matrix(double a[][5], int N){
 
     for (int i=0;i<N*N;i++) {
@@ -139,3 +142,5 @@ void init_preconditioner(double a[][5], double r[], double temp[], double z[], i
         gs_precon(z,a,r,N);
     }
 }
+
+#endif
