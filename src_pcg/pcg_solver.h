@@ -13,7 +13,7 @@
 #include "preconditioner.h"
 
 /*! PCG method */
-void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double temp[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
+void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
     double N2 = (N+2)*(N+2);
 
     // Pre loop calculations ( calculating residuum )
@@ -23,7 +23,7 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
     if (preconditioner==0){
         z=r;
     }
-    init_preconditioner(a,r,temp,z,N,preconditioner);
+    init_preconditioner(a,r,z,N,preconditioner);
 
     axpy(p,-1,z,0,(N+2)*(N+2)); // p = -r (first conjugated gradient direction)
 
@@ -47,7 +47,7 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
 
         
         // precondition r: z = M^-1*r
-        apply_precon(a,r,temp,z,N,preconditioner);
+        apply_precon(a,r,z,N,preconditioner);
 
         //update p
         new_r_dot = dot(r,z,N2);    // TB :need dot(r,z,N2) instaed of dot(r,r,N2)! 
@@ -73,15 +73,5 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
     printf("Number of iterations: %d\n",number_of_iterations);
 
 }
-
-
-
-
-
-
-
-
-
-
 
 #endif

@@ -92,14 +92,11 @@ int main(int argc, char** argv){
     m=(double *)malloc(vec_size_ghost*sizeof(double));
     null_vec(m,vec_size_ghost);
 
-    temp=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(temp,vec_size_ghost);
-
     // Creation of matrix a
     double a[N*N][5];
     
     // PCG solve
-    pcg_solve(a,N,x,r,b,temp,z,p,m,preconditioner,epsilon,debug);
+    pcg_solve(a,N,x,r,b,z,p,m,preconditioner,epsilon,debug);
 
     // Compute the relative absolute difference 
     double rel_dif = delta_rel(x,N); 

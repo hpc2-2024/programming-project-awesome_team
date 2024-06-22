@@ -115,10 +115,17 @@ params:
         N is the grid size
 solution is overwriten in z
 */
-void apply_precon(double a[][5],double r[],double temp[],double z[],int N, int preconditioner){
+void apply_precon(double a[][5],double r[], double z[],int N, int preconditioner){
     if (preconditioner==1) {
+
+        int vec_size_ghost = (N+2)*(N+2);
+        double* temp = (double *)malloc(vec_size_ghost*sizeof(double));
+        null_vec(temp,vec_size_ghost);
+        
         forward_solve(a,temp,r,N); // L* temp = r   
         backward_solve(a,z,temp,N); // Uz = temp
+
+        free(temp);
     }
     else if (preconditioner==2){
         inv_diag(z,r,N);
@@ -128,11 +135,11 @@ void apply_precon(double a[][5],double r[],double temp[],double z[],int N, int p
     }
 }
 
-void init_preconditioner(double a[][5], double r[], double temp[], double z[], int N, int preconditioner){
+void init_preconditioner(double a[][5], double r[], double z[], int N, int preconditioner){
     if (preconditioner == 1){
         lapl_matrix(a,N);
         ilu(a,N,0.001,100);
-        apply_precon(a,r,temp,z,N,preconditioner);
+        apply_precon(a,r,z,N,preconditioner);
     }
     else if (preconditioner == 2){
         inv_diag(z,r,N);
