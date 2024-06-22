@@ -13,8 +13,26 @@
 #include "preconditioner.h"
 
 /*! PCG method */
-void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
+void pcg_solve(int N, double x[],  double b[],  int preconditioner, double epsilon, int debug){
     double N2 = (N+2)*(N+2);
+    int vec_size_ghost = (N+2)*(N+2);
+    
+    double* Ap=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(Ap,vec_size_ghost);
+
+    double* r=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(r,vec_size_ghost);
+
+    double* z=(double *)malloc(vec_size_ghost*sizeof(double));
+
+    double* p=(double *)malloc(vec_size_ghost*sizeof(double));
+    null_vec(p,vec_size_ghost);
+
+    double** a = (double**)malloc(N*N*sizeof(double*));
+    for (int i=0; i<N*N; i++){
+        a[i] = (double*)malloc(5*sizeof(double));
+    }
+    
 
     // Pre loop calculations ( calculating residuum )
     mfMult(N,x,r); // r = Ax
@@ -72,6 +90,12 @@ void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double 
     //vec_print(N,x,"vector x"); // TB: I commented this print, use it only when you need it 
     printf("Number of iterations: %d\n",number_of_iterations);
 
+    free(p);
+    free(r);
+    free(Ap);
+    if (preconditioner==1){
+        free(z);
+    }
 }
 
 #endif

@@ -71,32 +71,18 @@ int main(int argc, char** argv){
 
     double epsilon = 1e-3;
 
-    double *x,*p,*r,*b,*m, *z,*temp;
+    double *x,*b;
 
     x=(double *)malloc(vec_size_ghost*sizeof(double));
     null_vec(x,vec_size_ghost);
     rand_vec(x, N, 2); // random start vector x_0 
 
-    z=(double *)malloc(vec_size_ghost*sizeof(double));
-
-    p=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(p,vec_size_ghost);
-
-    r=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(r,vec_size_ghost);
-
     b=(double *)malloc(vec_size_ghost*sizeof(double));
     null_vec(b,vec_size_ghost);
     init_b(b,N);
 
-    m=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(m,vec_size_ghost);
-
-    // Creation of matrix a
-    double a[N*N][5];
-    
     // PCG solve
-    pcg_solve(a,N,x,r,b,z,p,m,preconditioner,epsilon,debug);
+    pcg_solve(N,x,b,preconditioner,epsilon,debug);
 
     // Compute the relative absolute difference 
     double rel_dif = delta_rel(x,N); 
@@ -112,12 +98,7 @@ int main(int argc, char** argv){
 
     // free allocated memory
     free(x);
-    free(p);
-    free(r);
     free(b);
-    free(m);
-    if (preconditioner==1){
-        free(z);
-    }
+
     return 0;
 }
