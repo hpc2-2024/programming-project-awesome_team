@@ -43,10 +43,6 @@ double delta_rel(double x[], int N){
     return (abs_diff/abs_sol);
 }
 
-
-
-
-
 int main(int argc, char** argv){
 
     int preconditioner=0;
@@ -69,7 +65,7 @@ int main(int argc, char** argv){
     int N2 = (N+2)*(N+2);
     int vec_size_ghost = (N+2)*(N+2);
 
-    double epsilon = 1e-3;
+    double epsilon = 1e-4;
 
     double *x,*b;
 

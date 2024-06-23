@@ -1,8 +1,9 @@
 #ifndef PRECONDITIONER
 #define PRECONDITIONER
 
-void lapl_matrix(double** a, int N){
+#include "../src_mg/mg_preconditioner.h"
 
+void lapl_matrix(double** a, int N){
     for (int i=0;i<N*N;i++) {
         //diagonal
         a[i][2]=4;
@@ -105,19 +106,11 @@ void gs_precon(double z[], double** lplusd, double r[], int N){
     }
 }
 
-/*! 
-ILU(0) preconditioner
-params: 
-        a[][5] lu decomposition of matrix of poisson equation
-        r[] vector we solve for
-        temp[] temporary vector we use as Ux (Ax = LUx = Ly =  b)
-        z[] right hand side 
-        N is the grid size
-solution is overwriten in z
-*/
+
+
 void apply_precon(double** a,double r[], double z[],int N, int preconditioner){
     if (preconditioner==1) {
-
+        //ILU(0) preconditioner
         int vec_size_ghost = (N+2)*(N+2);
         double* temp = (double *)malloc(vec_size_ghost*sizeof(double));
         null_vec(temp,vec_size_ghost);
@@ -128,10 +121,14 @@ void apply_precon(double** a,double r[], double z[],int N, int preconditioner){
         free(temp);
     }
     else if (preconditioner==2){
+        //Jacobi preconditioner
         inv_diag(z,r,N);
     }
     else if (preconditioner==3){
         gs_precon(z,a,r,N);
+    }
+    else if (preconditioner==4) {
+        mg_precon(z, r, N);
     }
 }
 
@@ -147,6 +144,9 @@ void init_preconditioner(double** a, double r[], double z[], int N, int precondi
     else if (preconditioner == 3){
         lapl_matrix(a,N);
         gs_precon(z,a,r,N);
+    }
+    else if (preconditioner==4){
+        mg_precon(z,r,N);
     }
 }
 
