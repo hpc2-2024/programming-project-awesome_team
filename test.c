@@ -140,7 +140,7 @@ void test_jacobi_smoothing(){
     printf("Testing jacobi smoothing - START \n");
 
     printf("TC1 - Convergences with only Jacobi\n");
-    int N = 3;
+    int N = 49;
     int vec_size = (N+2)*(N+2);
 
     double u[vec_size];
