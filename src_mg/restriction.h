@@ -19,6 +19,7 @@ void restriction_simple(double *fine_grid, int M, double *coarse_grid, int N, in
     int M_pad = M+2;
     int N_pad = N+2;
 
+    #pragma omp parallel for
     for(int i = 0; i<N_pad; i++){
         for(int j = 0; j<N_pad; j++){
             int k = 2*i-1;
@@ -47,6 +48,7 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
     int M_pad = M+2;
     int N_pad = N+2;
     if (dim==2){
+        #pragma omp parallel for
         for(int i = 1; i<N_pad-1; i++){
             for(int j = 1; j<N_pad-1; j++){
                 int k = 2*i;
@@ -62,6 +64,7 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
         }
     }
     else if (dim==1){
+        #pragma omp parallel for
         for (int i=1;i<N_pad-1;i++){
             coarse_grid[i] = 0.25  * (fine_grid[2*i-1]+2*fine_grid[2*i]+fine_grid[2*i+1]);
         }

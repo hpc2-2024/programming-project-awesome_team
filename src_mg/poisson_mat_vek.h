@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <omp.h>
 
 
 /*! Implementation of a matrix free multiplication with 5-star stencil
@@ -16,6 +17,7 @@ params:
 
  */
 void mfMult(int N, double r[], double y[]){
+    #pragma omp parallel for
     for (int i=1;i<N+1;i++){
         for (int j=1;j<N+1;j++){
             y[(N+2)*i+j]=4*r[(N+2)*i+j]-r[(N+2)*(i+1)+j] -r[(N+2)*i+j-1]-r[(N+2)*(i-1)+j]-r[(N+2)*i+j+1];
@@ -43,6 +45,7 @@ void poisson_mat_vek(int dim, int N, double r[], double y[], int stencil9){
     double h = 1.0/(N+1);
     int N_pad = N + 2;
     if (dim==2){
+        #pragma omp parallel for
         for (int i=1;i<N+1;i++){
             for (int j=1;j<N+1;j++){
                 if (stencil9 == 1) {
@@ -54,6 +57,7 @@ void poisson_mat_vek(int dim, int N, double r[], double y[], int stencil9){
             }
         }
     } else if (dim==1) {
+        #pragma omp parallel for
         for (int i=1; i<N+1; i++){
             y[i]=pow(1.0/h,2)*(-r[i-1]+2*r[i]-r[i+1]);
         }
