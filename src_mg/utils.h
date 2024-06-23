@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <omp.h>
 
 /**
  * @brief Calculates the dot product of two vectors.
