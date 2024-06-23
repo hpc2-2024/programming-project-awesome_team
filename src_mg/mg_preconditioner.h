@@ -1,6 +1,15 @@
 #include "utils.h"
 #include "vcycle.h"
 
+/**
+ * @brief Calculates the number of levels for a multigrid hierarchy.
+ *
+ * This function calculates the number of levels in a multigrid hierarchy given
+ * the initial grid size `N`. It returns the maximal amount of levels possible.
+ *
+ * @param N The initial grid size.
+ * @return The number of levels in the multigrid hierarchy.
+ */
 int calc_number_of_levels(int N){
     // Calculate level
     int level = 1;
@@ -11,6 +20,15 @@ int calc_number_of_levels(int N){
     return level;
 }
 
+/**
+ * @brief Performs multigrid preconditioning.
+ *
+ * This function applies multigrid preconditioning to the input vector `r` and stores the result in `z`.
+ *
+ * @param[out] z Output vector to store the result of the preconditioning.
+ * @param[in] r Input vector to which preconditioning is applied.
+ * @param[in] N_start Initial grid size.
+ */
 void mg_precon(double* z, double* r, int N_start){
     int mg_iter = 2;
     int dimension = 2;
