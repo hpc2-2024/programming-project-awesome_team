@@ -83,7 +83,7 @@ void exact_solve_poisson_2D(double u[], double f[], int N, int use_stencil9) {
 
     if (use_stencil9==1) {
 
-        double h_sq = pow(1.0/ (6*h), 2);
+        double h_sq = (1.0/6.0) * pow(1.0/h, 2);
         // Fill matrix A with the 9-point stencil
         for (i = 1; i <= N; i++) {
             for (j = 1; j <= N; j++) {

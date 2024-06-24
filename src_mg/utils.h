@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <omp.h>
 
 /**
  * @brief Calculates the dot product of two vectors.
@@ -139,7 +140,7 @@ int get_vec_size(int N, int dim, int ghostlayer){
  * @param N Number of inner points in the finest grid.
  * @param levels Number of levels in the multigrid hierarchy.
  * @param dim Number of dimensions (1 or 2).
- * @return double** Pointer to the allocated multigrid array.
+ * @return double** Pointer to the allocated multigrid array the array is filled with zeros.
  */
 double** allocate_multigrid(int N, int levels, int dim) {
     double** grid = (double**)malloc(levels * sizeof(double*));

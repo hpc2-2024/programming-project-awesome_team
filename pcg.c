@@ -8,6 +8,20 @@
 #include "src_mg/poisson_mat_vek.h"
 #include "src_mg/utils.h"
 #include "src_pcg/preconditioner.h"
+#include "src_pcg/pcg_solver.h"
+
+void print_usage(){
+    printf("Usage: ./pcg <gridsize N> <preconditioner>\n");
+    printf("Example: ./pcg 63 4\n");
+    printf("Optional preconditioner: \n");
+    printf("1: Ilu(0)\n");
+    printf("2: Jacobi\n");
+    printf("3: Gauß-Seidel\n");
+    printf("4: Multigrid\n\n");
+
+    printf("\nOptional flags: \n");
+    printf("-time: measures the runtime\n");
+}
 
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){
@@ -42,82 +56,35 @@ double delta_rel(double x[], int N){
     return (abs_diff/abs_sol);
 }
 
-
-
-/*! PCG method */
-void pcg_solve(double a[][5], int N, double x[], double r[], double b[], double temp[], double z[], double p[], double Ap[], int preconditioner, double epsilon, int debug){
-    double N2 = (N+2)*(N+2);
-
-    // Pre loop calculations ( calculating residuum )
-    mfMult(N,x,r); // r = Ax
-    axpy(r,-1,b,r,(N+2)*(N+2)); // r = Ax -b (together with last line)
-    
-    if (preconditioner==0){
-        z=r;
-    }
-    init_preconditioner(a,r,temp,z,N,preconditioner);
-
-    axpy(p,-1,z,0,(N+2)*(N+2)); // p = -r (first conjugated gradient direction)
-
-    double old_r_dot, new_r_dot;
-    double alpha, beta;
-    double err_k;
-    old_r_dot = dot(r,z,N2); // dot product for loop
-
-    int number_of_iterations =0;
-    int it_max = 5000;
-    do
-    {
-        number_of_iterations+=1;
-
-        mfMult(N,p,Ap); // Ap
-        alpha=old_r_dot/dot(p,Ap,N2); // rz/pAp
-
-        // update x,r
-        axpy(x,alpha,p,x,N2); //x = x + alpha*p
-        axpy(r,alpha,Ap,r,N2); // r=r + alpha*Ap
-
-        
-        // precondition r: z = M^-1*r
-        apply_precon(a,r,temp,z,N,preconditioner);
-
-        //update p
-        new_r_dot = dot(r,z,N2);    // TB :need dot(r,z,N2) instaed of dot(r,r,N2)! 
-        beta = new_r_dot/old_r_dot;
-        axpby(p,-1,z,beta,p,(N+2)*(N+2));
-
-        old_r_dot = new_r_dot;
-
-        //break criteria
-        if (preconditioner==0){
-           err_k=sqrt(new_r_dot);
-        }
-        else {
-            err_k=sqrt(dot(z,z,N2));
-        }
-        if (debug==1) {
-            printf("residual it %d: %f \n",number_of_iterations,err_k); // TB: sometimes printing the residual is useful for the debug, you can monitor the convergence (can be commented)
-        }
-
-    } while (err_k >= epsilon && number_of_iterations <= it_max);   // TB: Better add a maximum number for the cg iteraions 
-
-    //vec_print(N,x,"vector x"); // TB: I commented this print, use it only when you need it 
-    printf("Number of iterations: %d\n",number_of_iterations);
-
-}
-
 int main(int argc, char** argv){
 
     int preconditioner=0;
     int N = 50; // N^2 is the number of inner points in our lattice
     int debug = 1; // option for printing infos of pcg (residual at each iteration)
+    int measure_time = 0;
+
+    // Check for -time flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-time") == 0) {
+            measure_time = 1;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;  // reduce argument count
+            i--;  // adjust index to recheck the current position
+        } 
+    }
+
     // Options when running code
-    if (argc>1){ // preconditioner
-        preconditioner=atoi(argv[1]);
+    if (argc>=2){ // preconditioner
+        N = atoi(argv[1]);
+        preconditioner=atoi(argv[2]);
     }
-    if (argc>2){ // gridsize N
-        N = atoi(argv[2]);
+    else {
+        print_usage();
+        return 0;
     }
+
     if (N>100){
         debug = 0;
     }
@@ -128,37 +95,32 @@ int main(int argc, char** argv){
     int N2 = (N+2)*(N+2);
     int vec_size_ghost = (N+2)*(N+2);
 
-    double epsilon = 1e-3;
+    double epsilon = 1e-4;
 
-    double *x,*p,*r,*b,*m, *z,*temp;
+    double *x,*b;
 
     x=(double *)malloc(vec_size_ghost*sizeof(double));
     null_vec(x,vec_size_ghost);
-    rand_vec(x,N); // random start vector x_0 
-
-    z=(double *)malloc(vec_size_ghost*sizeof(double));
-
-    p=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(p,vec_size_ghost);
-
-    r=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(r,vec_size_ghost);
+    rand_vec(x, N, 2); // random start vector x_0 
 
     b=(double *)malloc(vec_size_ghost*sizeof(double));
     null_vec(b,vec_size_ghost);
     init_b(b,N);
 
-    m=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(m,vec_size_ghost);
-
-    temp=(double *)malloc(vec_size_ghost*sizeof(double));
-    null_vec(temp,vec_size_ghost);
-
-    // Creation of matrix a
-    double a[N*N][5];
-    
     // PCG solve
-    pcg_solve(a,N,x,r,b,temp,z,p,m,preconditioner,epsilon,debug);
+    if (measure_time) {
+        // Measure time for a single run of mg_solve
+        clock_t start_time = clock();
+
+        pcg_solve(N,x,b,preconditioner,epsilon,debug);
+
+        clock_t end_time = clock();
+        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
+        printf("Time taken by pcg_solve: %f seconds\n", time_taken);
+    } 
+    else {
+        pcg_solve(N,x,b,preconditioner,epsilon,debug);
+    }
 
     // Compute the relative absolute difference 
     double rel_dif = delta_rel(x,N); 
@@ -174,12 +136,7 @@ int main(int argc, char** argv){
 
     // free allocated memory
     free(x);
-    free(p);
-    free(r);
     free(b);
-    free(m);
-    if (preconditioner==1){
-        free(z);
-    }
+
     return 0;
 }

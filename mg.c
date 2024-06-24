@@ -17,10 +17,12 @@ void print_usage() {
     printf("Example: ./mg 2 19 2 2\n");
     printf("Note: The dimension must be 1 or 2.\n");
     printf("\nOptional flags: \n");
+    printf("-fopenmp: use this flag for shared memory parallelization\n");
+    printf("    \"export OMP_NUM_THREADS=...\" before using, set the number of threads on your computer\n" );
     printf("-time: measures the runtime\n");
     printf("-avg_time: runs the multigrid solver 10 times and prints the average runtime\n");
     printf("-fcycle: with this flag the multigrid method uses fcycle instead of vcycle\n");
-    printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n");
+    printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n\n");
 }
 
 bool is_valid_input(int N, int levels) {
