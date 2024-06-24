@@ -125,7 +125,7 @@ void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, in
     // Peaks of w cycle in a for loop
     int peaks = 2*(levels-3)-1; // this is the result when breaking down the recursion into for loops
 
-    for (int i = peaks-1; i<peaks; i++){
+    for (int i = 0; i<peaks; i++){
         vec_size = get_vec_size(N,dim,1);
         N_finer = dim_finer(N);
         vec_size_finer = get_vec_size(N_finer,dim,1);
