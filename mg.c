@@ -2,7 +2,7 @@
 Compile code with: 
 gcc -fopenmp ./mg.c -o mg -lm
 Execute with e.g.:
-./mg 2 57 3 5
+./mg 2 57 3 5 0
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +13,10 @@ Execute with e.g.:
 #include "src_mg/mg_solver.h"
 
 void print_usage() {
-    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
-    printf("Example: ./mg 2 19 2 2\n");
+    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps> <smoother>\n");
+    printf("Example: ./mg 2 19 2 2 0\n");
     printf("Note: The dimension must be 1 or 2.\n");
+    printf("Note: For the <smoother> parameter, use \"0\" for Jacobi, \"1\" for Gauss-Seidel.\n");
     printf("\nOptional flags: \n");
     printf("-fopenmp: use this flag for shared memory parallelization\n");
     printf("    \"export OMP_NUM_THREADS=...\" before using, set the number of threads on your computer\n" );
@@ -108,6 +109,7 @@ int main (int argc, char** argv){
     int N = atoi(argv[arg_index++]);
     int levels = atoi(argv[arg_index++]);
     int v = atoi(argv[arg_index++]);
+    int smoother = atoi(argv[arg_index++]);
 
     if (dimension != 1 && dimension != 2) {
         print_usage();
@@ -140,7 +142,7 @@ int main (int argc, char** argv){
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
 
-            mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0);
+            mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother);
 
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
@@ -154,14 +156,14 @@ int main (int argc, char** argv){
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
 
-        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother);
 
         clock_t end_time = clock();
         double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
         printf("Time taken by mg_solve: %f seconds\n", time_taken);
     } 
     else {
-        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother);
     }
 
     //Output

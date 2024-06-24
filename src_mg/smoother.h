@@ -103,9 +103,14 @@ void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim){
  *
  * @note Vectors `u` and `f` should be pre-allocated to the appropriate sizes.
  */
-void smooth(double u[], double f[], int N, int v,int dim, int use_stencil9) {
-    // smooth_jacobi(u, f, N, v, dim, use_stencil9);
-    smooth_gauss_seidel(u, f, N, v, dim);
+void smooth(double u[], double f[], int N, int v,int dim, int use_stencil9, int smoother) {
+    
+    if(smoother == 0){
+        smooth_jacobi(u, f, N, v, dim, use_stencil9);
+    }
+    else if(smoother == 1){
+        smooth_gauss_seidel(u, f, N, v, dim);
+    }
 }
 
 #endif

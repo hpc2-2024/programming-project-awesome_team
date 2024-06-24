@@ -29,7 +29,7 @@ int calc_number_of_levels(int N){
  * @param[in] r Input vector to which preconditioning is applied.
  * @param[in] N_start Initial grid size.
  */
-void mg_precon(double* z, double* r, int N_start){
+void mg_precon(double* z, double* r, int N_start, int smoother){
     int mg_iter = 2;
     int dimension = 2;
     int N = N_start;
@@ -47,7 +47,7 @@ void mg_precon(double* z, double* r, int N_start){
     
     for (int i=0; i<mg_iter; i++) {
         //V_cycle
-        v_cycle(u, f, N, levels, v, dimension, use_stencil9, debug);
+        v_cycle(u, f, N, levels, v, dimension, use_stencil9, debug, smoother);
     }
 
     axpy(z, 1, u[levels-1], 0, vec_size); // z = u[levels -1] 
