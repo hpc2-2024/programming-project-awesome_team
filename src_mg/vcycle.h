@@ -95,7 +95,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
     }
 }
 
-void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, int use_stecil9, int debug) {
+void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, int use_stencil9, int debug) {
     int vec_size;
     int N = N_start;
 
