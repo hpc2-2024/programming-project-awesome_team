@@ -108,7 +108,7 @@ void gs_precon(double z[], double** lplusd, double r[], int N){
 
 
 
-void apply_precon(double** a,double r[], double z[],int N, int preconditioner){
+void apply_precon(double** a,double r[], double z[],int N, int preconditioner, int smoother){
     if (preconditioner==1) {
         //ILU(0) preconditioner
         int vec_size_ghost = (N+2)*(N+2);
@@ -128,15 +128,15 @@ void apply_precon(double** a,double r[], double z[],int N, int preconditioner){
         gs_precon(z,a,r,N);
     }
     else if (preconditioner==4) {
-        mg_precon(z, r, N);
+        mg_precon(z, r, N, smoother);
     }
 }
 
-void init_preconditioner(double** a, double r[], double z[], int N, int preconditioner){
+void init_preconditioner(double** a, double r[], double z[], int N, int preconditioner, int smoother){
     if (preconditioner == 1){
         lapl_matrix(a,N);
         ilu(a,N,0.001,100);
-        apply_precon(a,r,z,N,preconditioner);
+        apply_precon(a,r,z,N,preconditioner, smoother);
     }
     else if (preconditioner == 2){
         inv_diag(z,r,N);
@@ -146,7 +146,7 @@ void init_preconditioner(double** a, double r[], double z[], int N, int precondi
         gs_precon(z,a,r,N);
     }
     else if (preconditioner==4){
-        mg_precon(z,r,N);
+        mg_precon(z,r,N, smoother);
     }
 }
 

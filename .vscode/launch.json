@@ -5,7 +5,13 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}.exe",
-            "args": [],
+            "args": [
+                "2", //  
+                "15", // grid size 
+                "3", // number of levels
+                "2",
+                "100",
+            ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
