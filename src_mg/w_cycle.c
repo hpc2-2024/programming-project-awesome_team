@@ -57,7 +57,7 @@ void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, in
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
-        restriction_half(r, N, f[l-1], N_coarser,dim);
+        restriction(r, N, f[l-1], N_coarser,dim);
 
         null_vec(u[l-1], vec_size_coarser);
 
@@ -104,7 +104,7 @@ void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, in
         axpy(r, -1, r, f[1], vec_size);
 
         // Apply Restriction
-        restriction_half(r, N, f[0], N_coarser,dim);
+        restriction(r, N, f[0], N_coarser,dim);
 
         null_vec(u[0], vec_size_coarser);
         
@@ -163,7 +163,7 @@ void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, in
             axpy(r, -1, r, f[l], vec_size);
 
             // Apply Restriction
-            restriction_half(r, N, f[l-1], N_coarser,dim);
+            restriction(r, N, f[l-1], N_coarser,dim);
 
             null_vec(u[l-1], vec_size_coarser);
 
@@ -212,7 +212,7 @@ void w_cycle(double** u, double** f, int N_start, int levels, int v, int dim, in
     axpy(r, -1, r, f[1], vec_size);
 
     // Apply Restriction
-    restriction_half(r, N, f[0], N_coarser,dim);
+    restriction(r, N, f[0], N_coarser,dim);
 
     null_vec(u[0], vec_size_coarser);
 
