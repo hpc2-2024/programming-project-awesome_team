@@ -2,7 +2,7 @@
 Compile code with: 
 gcc -fopenmp ./mg.c -o mg -lm
 Execute with e.g.:
-./mg 2 57 3 5
+./mg 2 57 3 5 0
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +13,10 @@ Execute with e.g.:
 #include "src_mg/mg_solver.h"
 
 void print_usage() {
-    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
-    printf("Example: ./mg 2 19 2 2\n");
+    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps> <smoother>\n");
+    printf("Example: ./mg 2 19 2 2 0\n");
     printf("Note: The dimension must be 1 or 2.\n");
+    printf("Note: For the <smoother> parameter, use \"0\" for Jacobi, \"1\" for Gauss-Seidel.\n");
     printf("\nOptional flags: \n");
     printf("-fopenmp: use this flag for shared memory parallelization\n");
     printf("    \"export OMP_NUM_THREADS=...\" before using, set the number of threads on your computer\n" );
@@ -107,7 +108,8 @@ int main (int argc, char** argv){
         }
     }
 
-    if (argc != 5) {
+    // deactivate for debugging  
+    if (argc != 6) {
         print_usage();
         return 1;
     }
@@ -117,6 +119,16 @@ int main (int argc, char** argv){
     int N = atoi(argv[arg_index++]);
     int levels = atoi(argv[arg_index++]);
     int v = atoi(argv[arg_index++]);
+    int smoother = atoi(argv[arg_index++]);
+
+    printf("\nArguments:\n");
+    printf("Grid size, N = %d\n", N);
+    printf("Number of grids, levels = %d\n", levels);
+    printf("Dimension = %d\n", dimension);
+    printf("Number of smoothing iterations, v = %d\n", v);
+    printf("Smoother: %s\n", smoother ? "Gauss-Seidel" : "Jacobi");
+    printf("F-cycle used: %s\n", fcycle ? "yes" : "no");
+    printf("Stencil9 used: %s\n\n", use_stencil9 ? "yes" : "no");
 
     if (dimension != 1 && dimension != 2) {
         print_usage();
@@ -143,45 +155,53 @@ int main (int argc, char** argv){
     rand_vec(u[levels-1], N, dimension);
     init_b(f[levels-1], N, dimension);
 
+    int num_iterations = 0;
+    double final_error = 0.0;
+    int converged = 0;
+
+    double avg_time_taken, time_taken = 0.0;
     if (measure_avg_time) {
         // Measure average time for running mg_solve 10 times
         double total_time = 0;
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
 
-            mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 0);
+            mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 0,smoother, &num_iterations, &final_error, &converged);
 
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
             rand_vec(u[levels-1], N, dimension);
             init_b(f[levels-1], N, dimension);
         }
-        double avg_time_taken = total_time / 10;
-        printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
+        avg_time_taken = total_time / 10;
     } 
     else if (measure_time) {
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
 
-        mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 1);
+        mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 1,smoother, &num_iterations, &final_error, &converged);
 
         clock_t end_time = clock();
-        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
-        printf("Time taken by mg_solve: %f seconds\n", time_taken);
+        time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
     } 
     else {
-        mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 1);
+        mg_solve(u, f, N, levels, v, dimension, use_wcycle, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
     }
 
-    //Output
-    printf("\n");
-    printf("Grid size, N = %d\n",N);
-    printf("Number of grids, levels = %d\n",levels);
-    printf("Number of smoothing iterations, v = %d\n",v);
+    printf("\nResults:\n");
+    printf("Converged: %s\n", converged ? "yes" : "no");
+    printf("Number of iterations of Multi-Grid method: %d\n", num_iterations);
+    printf("Final error: %f\n", final_error);
+
+    if(measure_avg_time){
+        printf("Average time taken by multiple (10) runs of mg_solve(): %f seconds\n", avg_time_taken);
+    }
+    else if(measure_time){
+        printf("Time taken by single run of mg_solve(): %f seconds\n", time_taken);
+    }
 
     free_multigrid(u,levels);
     free_multigrid(f,levels);
 
     return 0;
-
 }

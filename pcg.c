@@ -37,8 +37,7 @@ void init_b(double b[],int N){
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
         for (int j = 1;j<N+1;j++){
-            b[(N+2)*i+j]=fun(i*h,j*h)*h*h; // TB: it is better to shift the h on the rhs, so you do not have a matirx that scale with h
-        }
+            b[(N+2)*i+j]=fun(i*h,j*h);         }
     }
 }
 
@@ -95,7 +94,7 @@ int main(int argc, char** argv){
     int N2 = (N+2)*(N+2);
     int vec_size_ghost = (N+2)*(N+2);
 
-    double epsilon = 1e-4;
+    double epsilon = 1e-6;
 
     double *x,*b;
 

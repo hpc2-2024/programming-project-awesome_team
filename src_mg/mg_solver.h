@@ -23,11 +23,14 @@
  * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_wcycle, int fcycle, int use_stencil9, int print_error){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_wcycle, int fcycle, int use_stencil9, int print_error,
+                int smoother, int *num_iterations, double *final_error, int *converged){
     int iter_max = 200;
     int iter = 0;
     double err;
     double epsilon=0.0001;
+
+    *converged = 1;
 
     int vec_size = get_vec_size(N,dim,1);
 
@@ -53,13 +56,13 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_
 
         // Perform a V-cycle to update the solution
         if (use_wcycle == 1) {
-            w_cycle_rec(u, f, N, levels, v, dim, use_stencil9, debug);
+            w_cycle_rec(u, f, N, levels, v, dim, use_stencil9, debug, smoother);
         }
         else if (fcycle == 1) {
-            f_cycle(u, f, N, levels, v, dim, use_stencil9, debug);
+            f_cycle(u, f, N, levels, v, dim, use_stencil9, debug, smoother);
         }
         else {
-            v_cycle(u, f, N, levels, v, dim, use_stencil9,debug);
+            v_cycle(u, f, N, levels, v, dim, use_stencil9,debug, smoother);
         }
 
 
@@ -80,11 +83,14 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_
             printf("Error: %f\n",err);
         }
         if (iter>iter_max){
-            printf("Multigrid solve stopped after %d iter without convergence.", iter);
+            *converged = 0;
+            // printf("Multigrid solve stopped after %d iter without convergence.", iter);
             break;
         }
     } while (err > epsilon);
     
+    *num_iterations = iter;
+    *final_error = err;
     free(r);
     // solution:
 }

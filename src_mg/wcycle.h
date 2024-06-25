@@ -11,7 +11,7 @@
 #include "exact_solver.h"
 
 
-void w_cycle_rec(double **u, double **f, int N_start, int levels, int v, int dim, int use_stencil9, int debug) {
+void w_cycle_rec(double **u, double **f, int N_start, int levels, int v, int dim, int use_stencil9, int debug, int smoother) {
     int N = N_start;
     if (levels==1){
         exact_solve(u[0],f[0],N,dim,use_stencil9);
@@ -26,24 +26,24 @@ void w_cycle_rec(double **u, double **f, int N_start, int levels, int v, int dim
         null_vec(r,vec_size);
 
         // Apply Smoothing
-        smooth(u[levels-1], f[levels-1], N, v, dim, use_stencil9);
+        smooth(u[levels-1], f[levels-1], N, v, dim, use_stencil9, smoother);
 
         // Compute Residual
         poisson_mat_vek(dim,N,u[levels-1],r, use_stencil9);
         axpy(r, -1, r, f[levels-1], vec_size);
 
         // Apply Restriction
-        restriction_half(r, N, f[levels-2], N_coarser,dim);
+        restriction(r, N, f[levels-2], N_coarser,dim);
 
         free(r);
         null_vec(u[levels-2], vec_size_coarser);
 
         if (levels>2) {
-            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug);
-            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug);
+            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug, smoother);
+            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug, smoother);
         }
         else {
-            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug);
+            w_cycle_rec(u,f, N_coarser, levels-1, v, dim, use_stencil9, debug, smoother);
         }
 
         
@@ -58,7 +58,7 @@ void w_cycle_rec(double **u, double **f, int N_start, int levels, int v, int dim
         axpy(u[levels-1], 1, u[levels-1], u_temp, vec_size);
 
         // Smoothing
-        smooth(u[levels-1], f[levels-1], N, v, dim, use_stencil9);
+        smooth(u[levels-1], f[levels-1], N, v, dim, use_stencil9, smoother);
 
         free(u_temp);
 
