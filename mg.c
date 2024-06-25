@@ -98,11 +98,11 @@ int main (int argc, char** argv){
         }
     }
 
-    // // deactivate for debugging  
-    // if (argc != 5) {
-    //     print_usage();
-    //     return 1;
-    // }
+    // deactivate for debugging  
+    if (argc != 6) {
+        print_usage();
+        return 1;
+    }
 
     int arg_index = 1;
     int dimension = atoi(argv[arg_index++]);
@@ -116,7 +116,9 @@ int main (int argc, char** argv){
     printf("Number of grids, levels = %d\n", levels);
     printf("Dimension = %d\n", dimension);
     printf("Number of smoothing iterations, v = %d\n", v);
-    printf("F-cycle used = %s\n\n", fcycle ? "yes" : "no");
+    printf("Smoother: %s\n", smoother ? "Gauss-Seidel" : "Jacobi");
+    printf("F-cycle used: %s\n", fcycle ? "yes" : "no");
+    printf("Stencil9 used: %s\n\n", use_stencil9 ? "yes" : "no");
 
     if (dimension != 1 && dimension != 2) {
         print_usage();
@@ -129,9 +131,6 @@ int main (int argc, char** argv){
         printf("\n Error: Flag for using 9 point stencil was enable but dimension was not 2 \n");
         return 1;
     }
-
-            // printf("Error at iteration %d  : %f\n", iter, err);
-
 
     if (!is_valid_input(N, levels)) {
         printf("Error: (N - (2^(levels-1) - 1)) must be divisible by 2^(levels-1).\n");
@@ -165,7 +164,6 @@ int main (int argc, char** argv){
             init_b(f[levels-1], N, dimension);
         }
         double avg_time_taken = total_time / 10;
-        printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
     } 
     else if (measure_time) {
         // Measure time for a single run of mg_solve
@@ -175,19 +173,18 @@ int main (int argc, char** argv){
 
         clock_t end_time = clock();
         double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
-        printf("Time taken by mg_solve: %f seconds\n", time_taken);
     } 
     else {
         mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
     }
 
     printf("\nResults:\n");
-    printf("Number of iterations per run = %d\n", num_iterations);
-    printf("Final error = %f\n", final_error);
-    printf("Converged = %s\n", converged ? "yes" : "no");
+    printf("Converged: %s\n", converged ? "yes" : "no");
+    printf("Number of iterations of Multi-Grid method: %d\n", num_iterations);
+    printf("Final error: %f\n", final_error);
 
     if(measure_avg_time){
-        printf("Average time taken by multiple runs of mg_solve(): %f seconds\n", avg_time_taken);
+        printf("Average time taken by multiple (10) runs of mg_solve(): %f seconds\n", avg_time_taken);
     }
     else if(measure_time){
         printf("Time taken by single run of mg_solve(): %f seconds\n", time_taken);
