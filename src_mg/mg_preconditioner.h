@@ -30,7 +30,7 @@ int calc_number_of_levels(int N){
  * @param[in] N_start Initial grid size.
  */
 void mg_precon(double* z, double* r, int N_start, int smoother){
-    int mg_iter = 2;
+    int mg_iter = 1;
     int dimension = 2;
     int N = N_start;
     int vec_size = get_vec_size(N, dimension,1);
