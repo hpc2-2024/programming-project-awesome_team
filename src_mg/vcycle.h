@@ -53,7 +53,7 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         axpy(r, -1, r, f[l], vec_size);
 
         // Apply Restriction
-        restriction_half(r, N, f[l-1], N_coarser,dim);
+        restriction(r, N, f[l-1], N_coarser,dim);
         if (debug==1){
             printf("f_%d after smoothing:\n",l-1);
             vec_print(N_coarser,f[l-1],"f");
