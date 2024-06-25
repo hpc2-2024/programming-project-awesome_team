@@ -1,3 +1,6 @@
+#ifndef RESTRICTION
+#define RESTRICTION
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,7 +74,6 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
     }
 }
 
-
 void restriction_full(double *fine_grid, int M, double *coarse_grid, int N,int dim){
     int M_pad = M+2;
     int N_pad = N+2;
@@ -104,8 +106,9 @@ void restriction_full(double *fine_grid, int M, double *coarse_grid, int N,int d
     }
 }
 
-
 void restriction(double *fine_grid, int M, double *coarse_grid, int N,int dim){
     restriction_full(fine_grid,M, coarse_grid,N, dim);
 }
+
+#endif
 

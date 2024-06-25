@@ -59,8 +59,6 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
             vec_print(N_coarser,f[l-1],"f");
         }
 
-        // print_matrix(N_coarser + 2, f[l-1]);
-
         null_vec(u[l-1], vec_size_coarser);
 
         N = N_coarser;
@@ -79,8 +77,6 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
         u_temp = malloc(vec_size_finer * sizeof(*u_temp));
         null_vec(u_temp, vec_size_finer);
 
-        // print_matrix(N+2, u[l-1]);
-
         // Apply Prolongation
         prolongation_simple(u[l-1], N, u_temp, N_finer,dim);
 
@@ -95,13 +91,42 @@ void v_cycle(double** u, double **f, int N_start, int levels, int v, int dim, in
     }
 }
 
-
 void f_cycle(double **u, double **f, int N_start, int levels, int v, int dim, int use_stencil9, int debug, int smoother) {
-    int N_coarsest = N_start;
-    for (int k=levels-2; k>=0; k--){
-        N_coarsest = dim_coarser(N_coarsest);
+    int N = N_start;
+    int vec_size;
+
+    for (int l = levels-1; l>=1; l--){
+        vec_size = get_vec_size(N,dim,1);
+        int N_coarser = dim_coarser(N); 
+        int vec_size_coarser = get_vec_size(N_coarser,dim,1);
+
+        double *r;
+        r = malloc(vec_size * sizeof(*r));
+        null_vec(r,vec_size);
+
+        // Apply Smoothing
+        smooth(u[l], f[l], N, v, dim, use_stencil9, smoother);
+        if (debug==1){
+            printf("u_%d after smoothing:\n",l);
+            vec_print(N,u[l],"u");
+        }
+
+        // Compute Residual
+        poisson_mat_vek(dim,N,u[l],r, use_stencil9);
+        axpy(r, -1, r, f[l], vec_size);
+
+        // Apply Restriction
+        restriction_half(r, N, f[l-1], N_coarser,dim);
+        if (debug==1){
+            printf("f_%d after smoothing:\n",l-1);
+            vec_print(N_coarser,f[l-1],"f");
+        }
+
+        null_vec(u[l-1], vec_size_coarser);
+
+        N = N_coarser;
+        free(r);
     }
-    int N = N_coarsest;
     // Pre-smoothing phase
     for (int k = 0; k < levels; k++) {
         // Perform v iterations of V-cycle on u[k]

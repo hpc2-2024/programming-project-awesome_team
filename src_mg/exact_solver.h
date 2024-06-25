@@ -1,3 +1,6 @@
+#ifndef EXACT_SOLVER
+#define EXACT_SOLVER
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -217,3 +220,5 @@ void exact_solve(double u[], double f[], int N, int dim, int use_stencil9){
         exact_solve_poisson_1D(u,f,N);
     }
 }
+
+#endif

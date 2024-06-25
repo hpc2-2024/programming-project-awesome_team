@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "vcycle.h"
+#include "wcycle.h"
 #include "poisson_mat_vek.h"
 
 
@@ -22,8 +23,8 @@
  * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  * @param print_error Option to print the error after each cycle (0 or 1).
  */
-void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcycle,
-                 int use_stencil9, int print_error, int smoother, int *num_iterations, double *final_error, int *converged){
+void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_wcycle, int fcycle, int use_stencil9, int print_error,
+                int smoother, int *num_iterations, double *final_error, int *converged){
     int iter_max = 200;
     int iter = 0;
     double err;
@@ -54,7 +55,10 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int fcyc
         iter += 1;
 
         // Perform a V-cycle to update the solution
-        if (fcycle == 1) {
+        if (use_wcycle == 1) {
+            w_cycle_rec(u, f, N, levels, v, dim, use_stencil9, debug, smoother);
+        }
+        else if (fcycle == 1) {
             f_cycle(u, f, N, levels, v, dim, use_stencil9, debug, smoother);
         }
         else {
