@@ -34,7 +34,12 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
         // Copy u to u_new (needed for the Jacobi update)
         memcpy(u_new, u, vec_size * sizeof(double));
 
-        if (dim==2) {
+        if (dim==3) {
+            poisson_mat_vek(dim,N,u,u_new, 0);
+            axpy(u_new,-1,u_new,f,vec_size);
+            axpy(u_new,0.6/6*h*h,u_new,u,vec_size);
+        }
+        else if (dim==2) {
             if (use_stencil9 == 1) {
                 poisson_mat_vek(dim,N,u,u_new, use_stencil9);
                 axpy(u_new,-1,u_new,f,vec_size);
