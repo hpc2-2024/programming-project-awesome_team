@@ -6,12 +6,11 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}.exe",
             "args": [
+                "2", //  
+                "15", // grid size 
+                "3", // number of levels
                 "2",
-                "19",
-                "2",
-                "2",
-                "1",
-                "-time",
+                "100",
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

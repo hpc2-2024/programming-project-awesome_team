@@ -154,7 +154,7 @@ void test_jacobi_smoothing(){
     double r[vec_size];
     null_vec(r,vec_size);
 
-    for (int i = 0; i<10000; i++){
+    for (int i = 0; i<100; i++){
         smooth_jacobi(u,b,N,1,2,0);
     }
 
@@ -187,12 +187,12 @@ void test_gauss_smoothing(){
     double r[vec_size];
     null_vec(r,vec_size);
 
-    for (int i = 0; i<10000; i++){
+    for (int i = 0; i<100; i++){
         smooth_gauss_seidel(u,b,N,1,2);
     }
 
     // calculate new residual
-    mfMult(N, u, r);                //Au
+    poisson_mat_vek(2, N, u, r, 0);                //Au
     axpy(r, -1, r, b, vec_size);    //r= f-Au
 
     double err = norm(r,vec_size);
