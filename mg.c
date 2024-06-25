@@ -4,6 +4,9 @@ gcc -fopenmp ./mg.c -o mg -lm
 Execute with e.g.:
 ./mg 2 57 3 5 0
 */
+
+/*! @file */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -25,7 +28,19 @@ void print_usage() {
     printf("-fcycle: with this flag the multigrid method uses fcycle instead of vcycle\n");
     printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n\n");
 }
-
+/*! 
+* @brief Run the Multi-Grid method with various parameters to solve a system of linear equations. 
+    @note Usage: ./mg <dimension> <gridsize> <levels> <smoothing steps> <smoother>
+    @note Example: ./mg 2 19 2 2 10
+    @note Note: The dimension must be 1 or 2.
+    @note Note: Setting <smoother> to 0 selects Jacobi, setting it to 1 selects Gauss-Seidel.
+    @note Optional flags:
+    @note   -fopenmp : use this flag for shared memory parallelization, run "export OMP_NUM_THREADS=...\" before using to set the number of threads on your machine.
+    @note   -fcycle : with this flag the multigrid method uses fcycle instead of vcycle
+    @note   -time : with this flag, perform a single Multi-Grid run and output the time.
+    @note   -avg_time : with this flag, perform multiple Multi-Grid runs and output their average time.
+    @note   -stencil9 : whith this flag, the algorithm uses the 9-point stencil (only works if dimension=2)
+*/
 bool is_valid_input(int N, int levels) {
     int k = pow(2, levels - 1);
     return (N - (k - 1)) % k == 0;

@@ -3,6 +3,12 @@
 
 #include "../src_mg/mg_preconditioner.h"
 
+/*!
+ * @brief Returns the Poisson matrix for a given size.
+ *
+ * @param a Input matrix to fill.
+ * @param N Size of the matrix, i.e. a has shape (N x N)
+ */
 void lapl_matrix(double** a, int N){
     for (int i=0;i<N*N;i++) {
         //diagonal
@@ -36,6 +42,13 @@ void lapl_matrix(double** a, int N){
     }
 }
 
+/*!
+ * @brief Compute the ILU decomposition for the Poisson matrix iteratively.
+ *
+ * @param a Input matrix.
+ * @param N Size of the matrix, i.e. a has shape (N x N)
+ * @param max_it Maximum number of iterations steps.
+ */
 /*!iterative ilu for laplace matrix*/
 void ilu(double** a, int N,double epsilon,int max_it){
     int iteration_count = 0;
@@ -53,14 +66,29 @@ void ilu(double** a, int N,double epsilon,int max_it){
             }
             a[i][2]=4+a[i][0]+a[i][1];
         }
-
     }
 }
 
+/*!
+ * @brief Given an index pair i and j of a matrix with ghost layers, compute the corresponding index in the flattened vector.
+ *
+ * @param i Index x-dimension.
+ * @param y Index y-dimension.
+ * @param N Size of the matrix. 
+ */
 //double_index_with_ghostlayer_to_single_index
 int conv_idx(int i, int j, int N){
     return (i-1)*N+j-1;
 }
+
+/*!
+ * @brief Perform the forward-solve for the 5-point stencil and a matrix with ghost layers.
+ *
+ * @param a Input matrix.
+ * @param y Output vector.
+ * @param b Right-hand side vector. 
+ * @param N Number of inner points.
+ */
 
 /*! forward solve for 5 star stencil with ghostlayer in vectors*/
 void forward_solve(double** a,double y[], double b[],int N){
@@ -70,6 +98,15 @@ void forward_solve(double** a,double y[], double b[],int N){
         }
     }
 }
+
+/*!
+ * @brief Perform the backward-solve for the 5-point stencil and a matrix with ghost layers.
+ *
+ * @param a Input matrix.
+ * @param x Output vector.
+ * @param y Right-hand side vector. 
+ * @param N Number of inner points.
+ */
 
 /*! backward solve for 5 star stencil with ghostlayer in vectors*/
 void backward_solve(double** a,double x[],double y[],int N){
@@ -82,8 +119,13 @@ void backward_solve(double** a,double x[],double y[],int N){
 }
 
 /*!
-Jacobi preconditioner 
-*/
+ * @brief Perform the Jacobi method matrix-free as a preconditioner.
+ *
+ * @param y Vector to fill.
+ * @param b Right-hand side vector. 
+ * @param N Number of inner points, i.e. the input is expected to have ghost layers.
+ */
+/*! Jacobi preconditioner */
 void inv_diag(double y[], double b[], int N){
     for (int i=1;i<N+1;i++){
         for (int j=1;j<N+1;j++){
@@ -93,22 +135,28 @@ void inv_diag(double y[], double b[], int N){
 }
 
 /*!
-
-!!! Probably some index error in here !!!
-
-Gaus-Seidel preconditioner
-*/
+ * @brief Perform the Gauss-Seidel method matrix-free as a preconditioner.
+ */
+/*! Gaus-Seidel preconditioner */
 void gs_precon(double z[], double** lplusd, double r[], int N){
     for (int i=1;i<N+1;i++){
         for (int j=1;j<N+1;j++){
-            z[i*(N+2)+j]=(r[i*(N+2)+j]-lplusd[(i-1)*N+j-1][0]*z[(i-1)*(N+2)+j]-lplusd[conv_idx(i,j,N)][1]*z[i*(N+2)+j-1])/4;
+            z[i*(N+2)+j]=(r[i*(N+2)+j]-lplusd[(i-1)*N+j-1][0]*z[(i-1)*(N+2)+j]-lplusd[conv_idx(i,j,N)][1]*z[i*(N+2)+j-1])/4; // Probably some index error in here !!!
+
         }
     }
 }
 
-
-
-void apply_precon(double** a,double r[], double z[],int N, int preconditioner, int smoother){
+/*!
+ * @brief Compute one of several preconditioners (ILU, Jacobi, Gauss-Seidel, Multi-Grid).
+ *
+ * @param a Pre-allocated matrix for ILU decomposition
+ * @param r Residuum vector. 
+ * @param z Vector for computing the backward solve.
+ * @param preconditioner Specfiy which type of preconditioner to use: "1" = ILU, "2" = Jacobi, "3" = "Gauss-Seidel", "4" = Multi-Grid
+ * @param smoother Specify which smoothing algorithm to use in the Multi-Grid method: "0" = Jacobi, "1" = Gauss-Seidel
+ */
+void apply_precon(double** a, double r[], double z[], int N, int preconditioner, int smoother){
     if (preconditioner==1) {
         //ILU(0) preconditioner
         int vec_size_ghost = (N+2)*(N+2);
@@ -132,6 +180,16 @@ void apply_precon(double** a,double r[], double z[],int N, int preconditioner, i
     }
 }
 
+/*!
+ * @brief Initialize one of several preconditioners (ILU, Jacobi, Gauss-Seidel, Multi-Grid).
+ *
+ * @param a Pre-allocated matrix for ILU decomposition
+ * @param r Residuum vector. 
+ * @param z Vector for computing the backward solve.
+ * @param N Size, i.e. the vector we solve for has size (N * N).
+ * @param preconditioner Specfiy which type of preconditioner to use: "1" = ILU, "2" = Jacobi, "3" = "Gauss-Seidel", "4" = Multi-Grid
+ * @param smoother Specify which smoothing algorithm to use in the Multi-Grid method: "0" = Jacobi, "1" = Gauss-Seidel
+ */
 void init_preconditioner(double** a, double r[], double z[], int N, int preconditioner, int smoother){
     if (preconditioner == 1){
         lapl_matrix(a,N);

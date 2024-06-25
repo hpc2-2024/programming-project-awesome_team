@@ -4,6 +4,9 @@ gcc -fopenmp ./mg.c -o mg -lm
 Execute with e.g.:
 ./mg 2 57 3 5 10
 */
+
+/*! @file */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -28,15 +31,21 @@ bool is_valid_input(int N, int levels) {
     return (N - (k - 1)) % k == 0;
 }
 
-/*! The function f of the exercise sheet*/
+/*! @brief Compute f(x) = 2 * pi^2 * sin(pi * y) * sin(pi * x) */
 double fun(double x, double y){
     return sin(y*M_PI)*sin(x*M_PI)*2.0*M_PI*M_PI;
 }
 
+/*! @brief Compute the gradient of f: sin(pi * y) * sin(pi * x) */
 double fun_solution(double x, double y){
     return sin(x*M_PI)*sin(y*M_PI);
 }
 
+/*! @brief Initialize the right-hand side vector
+* @param b Vector to fill.
+* @param N Size of b.
+* @param dim Whether b is 1- or 2-dimensional.
+ */
 void init_b(double b[],int N, int dim){
     double h = 1.0/(N+1);
     double h2 = h * h;
@@ -53,6 +62,16 @@ void init_b(double b[],int N, int dim){
     }
 }
 
+/*! 
+* @brief Compare the runtime of the Multi-Grid method when using the Jacobi smoother against the Gauss-Seidel smoother. 
+    @note Usage: ./mg <dimension> <gridsize> <levels> <smoothing steps> <iterations>
+    @note Example: ./mg 2 19 2 2 10 to average the times over 10 runs for a grid of size 19^dimensions, using 2 levels and 2 smoothing steps.
+    @note Note: The dimension must be 1 or 2.
+    @note Optional flags:
+    @note   -fopenmp : use this flag for shared memory parallelization, run "export OMP_NUM_THREADS=...\" before using to set the number of threads on your machine.
+    @note   -fcycle : with this flag the multigrid method uses fcycle instead of vcycle
+    @note   -stencil9 : uses the 9-point stencil, only works if dimension=2
+*/
 int main (int argc, char** argv){
     // optional flags
     int measure_time = 0;

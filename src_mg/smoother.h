@@ -61,6 +61,21 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
     free(u_new);
 }
 
+/*!
+ * @brief Performs Gauss-Seidel smoothing on the input vector `u`.
+ *
+ * Applies Jacobi smoothing iterations to the input vector `u` based on the
+ * right-hand side vector `f`. Supports both 1D and 2D based on `dim`.
+ *
+ * @param u Input vector to be smoothed.
+ * @param f Right-hand side vector.
+ * @param N Number of internal grid points.
+ * @param v Number of smoothing iterations.
+ * @param dim Dimension of the problem (1 or 2).
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
+ *
+ * @note Vectors `u` and `f` should be pre-allocated to the appropriate sizes.
+ */
 void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_stencil9){
     int N_pad = N + 2; 
     int X_size = get_vec_size(N, dim, 1); // (N+2) * (N+2)
@@ -114,7 +129,7 @@ void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_st
     }
 }
 
-/**
+/*!
  * @brief Smooths the input vector `u` using Jacobi smoothing.
  *
  * Calls the Jacobi smoothing function with the given parameters.

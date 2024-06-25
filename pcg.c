@@ -10,6 +10,8 @@
 #include "src_pcg/preconditioner.h"
 #include "src_pcg/pcg_solver.h"
 
+/*! @file */
+
 void print_usage(){
     printf("Usage: ./pcg <gridsize N> <preconditioner>\n");
     printf("Example: ./pcg 63 4\n");
@@ -23,6 +25,14 @@ void print_usage(){
     printf("-time: measures the runtime\n");
 }
 
+/*! 
+* @brief Solve a linear system using the preconditioned Conjugate Gradients method. 
+    @note Usage: ./pcg <gridsize> <preconditioner>
+    @note Example: ./pcg 63 4
+    @note Note: set <preconditioner> to one of the following values to select different preconditioning methods: 1 = ILU, 2 = Jacobi, 3 = Gauss-Seidel, 4 = Multi-Grid
+    @note Optional flags:
+    @note   -time : with this flag, perform a single PCG run and output the time.
+*/
 /*! The function f of the exercise sheet*/
 double fun(double x, double y){
     return sin(y*M_PI)*sin(x*M_PI)*2.0*M_PI*M_PI;

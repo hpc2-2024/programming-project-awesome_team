@@ -202,9 +202,6 @@ void test_gauss_smoothing(){
     printf("Testing gauss-seidel smoothing - END \n\n");
 }
 
-
-
-
 int main(){
     // test_norm();
     // test_prolongation();

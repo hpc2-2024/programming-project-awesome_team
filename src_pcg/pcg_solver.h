@@ -12,6 +12,17 @@
 #include "../src_mg/utils.h"
 #include "preconditioner.h"
 
+
+/*!
+ * @brief Solve a linear system using the preconditioned Conjugate Gradients method.
+ *
+ * @param N Size, i.e. the input is a vector of size (N * N).
+ * @param x Input vector to solve for.
+ * @param b The right-hand side vector.
+ * @param preconditioner The type of preconditioner ("1" = ILU, "2" = Jacobi, "3" = "Gauss-Seidel", "4" = Multi-Grid)
+ * @param epsilon The tolerance, stop the algorithm if the error is smaller than this value.
+ * @param debug For debugging purposes.
+ */
 /*! PCG method */
 void pcg_solve(int N, double x[],  double b[],  int preconditioner, double epsilon, int debug){
     double N2 = (N+2)*(N+2);
