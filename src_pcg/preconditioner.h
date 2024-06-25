@@ -107,7 +107,7 @@ Gaus-Seidel preconditioner
 void gs_precon(double z[], double** lplusd, double r[], int N){
     for (int i=1;i<N+1;i++){
         for (int j=1;j<N+1;j++){
-            z[i*(N+2)+j]=(r[i*(N+2)+j]-lplusd[(i-1)*N+j-1][0]*z[(i-1)*(N+2)+j]-lplusd[conv_idx(i,j,N)][1]*z[i*(N+2)+j-1])/4;
+            z[i*(N+2)+j]=(r[i*(N+2)+j]-lplusd[(i-1)*N+j-1][0]*z[(i-1)*(N+2)+j]-lplusd[conv_idx(i,j,N)][1]*z[i*(N+2)+j-1])/ lplusd[(i-1)*N+j-1][2];
         }
     }
 }
