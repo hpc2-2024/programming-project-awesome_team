@@ -60,9 +60,10 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
  * @param u The solution vector with ghost layers.
  * @param f The right-hand side vector with ghost layers.
  * @param N The number of internal points in each dimension.
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  */
-void exact_solve_poisson_2D(double u[], double f[], int N) {
-    int i, j, k;
+void exact_solve_poisson_2D(double u[], double f[], int N, int use_stencil9) {
+    int i, j, k, idx;
     double h = 1.0/(N+1);
     double h2 = h*h;
     int NN = N * N;
@@ -80,17 +81,62 @@ void exact_solve_poisson_2D(double u[], double f[], int N) {
         }
     }
 
-    // Fill matrix A with the discretized Laplacian operator
-    for (i = 1; i <= N; i++) {
-        for (j = 1; j <= N; j++) {
-            int idx = (i-1) * N + (j-1);
-            b[idx] = f[i * (N + 2) + j];
-            A[idx * NN + idx] =  4.0/h2;
-            if (i > 1) A[idx * NN + (idx - N)] = -1.0/h2; // up
-            if (i < N) A[idx * NN + (idx + N)] = -1.0/h2; // down
-            if (j > 1) A[idx * NN + (idx - 1)] = -1.0/h2; // left
-            if (j < N) A[idx * NN + (idx + 1)] = -1.0/h2; // right
+    if (use_stencil9==1) {
+
+        double h_sq = (1.0/6.0) * pow(1.0/h, 2);
+        // Fill matrix A with the 9-point stencil
+        for (i = 1; i <= N; i++) {
+            for (j = 1; j <= N; j++) {
+                idx = (i - 1) * N + (j - 1);
+                b[idx] = f[i * (N+2) + j];
+
+                // Diagonal element
+                A[idx * NN + idx] = 3 * h_sq;
+
+                // 9-point stencil elements
+                if (j > 1) {
+                    A[idx * NN + (idx - 1)] = -0.5 * h_sq; // left
+                }
+                if (j < N) {
+                    A[idx * NN + (idx + 1)] = -0.5 * h_sq; // right
+                }
+                if (i > 1) {
+                    A[idx * NN + (idx - N)] = -0.5 * h_sq; // up
+                }
+                if (i < N) {
+                    A[idx * NN + (idx + N)] = -0.5 * h_sq; // down
+                }
+                if (i > 1 && j > 1) {
+                    A[idx * NN + (idx - N - 1)] = - 0.25 * h_sq; // up-left
+                }
+                if (i > 1 && j < N) {
+                    A[idx * NN + (idx - N + 1)] = -0.25 * h_sq; // up-right
+                }
+                if (i < N && j > 1) {
+                    A[idx * NN + (idx + N - 1)] = -0.25 * h_sq; // down-left
+                }
+                if (i < N && j < N) {
+                    A[idx * NN + (idx + N + 1)] = -0.25 * h_sq; // down-right
+                }
+            }
         }
+
+    }
+    else {
+
+        // Fill matrix A with the discretized Laplacian operator
+        for (i = 1; i <= N; i++) {
+            for (j = 1; j <= N; j++) {
+                int idx = (i-1) * N + (j-1);
+                b[idx] = f[i * (N + 2) + j];
+                A[idx * NN + idx] =  4.0/h2;
+                if (i > 1) A[idx * NN + (idx - N)] = -1.0/h2; // up
+                if (i < N) A[idx * NN + (idx + N)] = -1.0/h2; // down
+                if (j > 1) A[idx * NN + (idx - 1)] = -1.0/h2; // left
+                if (j < N) A[idx * NN + (idx + 1)] = -1.0/h2; // right
+            }
+        }
+
     }
 
     gaussian_elimination(A, b, temp_u, NN);
@@ -161,10 +207,11 @@ void exact_solve_poisson_1D(double u[], double f[], int N){
  * @param f The right-hand side vector with ghost layers.
  * @param N The number of internal points.
  * @param dim Dimension of the problem (1 or 2).
+ * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  */
-void exact_solve(double u[], double f[], int N, int dim){
+void exact_solve(double u[], double f[], int N, int dim, int use_stencil9){
     if (dim==2){
-        exact_solve_poisson_2D(u,f,N);
+        exact_solve_poisson_2D(u,f,N, use_stencil9);
     }
     else if (dim==1){
         exact_solve_poisson_1D(u,f,N);

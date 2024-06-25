@@ -21,6 +21,7 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
 
     if (dim==2) {
         // only iterate over the inner points and interpolate them from the coarse grid
+        #pragma omp parallel for
         for(int i = 1; i<M_pad-1; i++){
             for(int j = 1; j<M_pad-1; j++){
                 int k = (int) (i+1)/2;
@@ -53,10 +54,12 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
         fine_grid[0]=0;
         fine_grid[N_pad-1]=0;
 
+        #pragma omp parallel for
         for (int i = 1; i<N_pad-1;i++){
             fine_grid[2*i]=coarse_grid[i];
         }
 
+        #pragma omp parallel for
         for (int i=1;i<N_pad;i++){
             fine_grid[2*i-1] = 0.5 * (coarse_grid[i-1]+coarse_grid[i]);
         }

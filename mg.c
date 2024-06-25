@@ -2,7 +2,7 @@
 Compile code with: 
 gcc -fopenmp ./mg.c -o mg -lm
 Execute with e.g.:
-./mg 2 57 3 5
+./mg 2 57 3 5 0
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,13 +13,17 @@ Execute with e.g.:
 #include "src_mg/mg_solver.h"
 
 void print_usage() {
-    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps>\n");
-    printf("Example: ./mg 2 19 2 2\n");
+    printf("Usage: ./mg <dimension> <gridsize N> <levels> <smoothing steps> <smoother>\n");
+    printf("Example: ./mg 2 19 2 2 0\n");
     printf("Note: The dimension must be 1 or 2.\n");
+    printf("Note: For the <smoother> parameter, use \"0\" for Jacobi, \"1\" for Gauss-Seidel.\n");
     printf("\nOptional flags: \n");
+    printf("-fopenmp: use this flag for shared memory parallelization\n");
+    printf("    \"export OMP_NUM_THREADS=...\" before using, set the number of threads on your computer\n" );
     printf("-time: measures the runtime\n");
     printf("-avg_time: runs the multigrid solver 10 times and prints the average runtime\n");
     printf("-fcycle: with this flag the multigrid method uses fcycle instead of vcycle\n");
+    printf("-stencil9: uses the 9-point stencil, only works if dimension=2\n\n");
 }
 
 bool is_valid_input(int N, int levels) {
@@ -57,6 +61,7 @@ int main (int argc, char** argv){
     int measure_time = 0;
     int measure_avg_time = 0;
     int fcycle = 0;
+    int use_stencil9 = 0;
     
     // Check for -time and -avg_time flags
     for (int i = 1; i < argc; i++) {
@@ -83,18 +88,28 @@ int main (int argc, char** argv){
             argc--;  // reduce argument count
             i--;  // adjust index to recheck the current position
         }
+        if (strcmp(argv[i], "-stencil9") == 0) {
+            use_stencil9 = 1;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;  // reduce argument count
+            i--;  // adjust index to recheck the current position
+        }
     }
 
-    if (argc != 5) {
-        print_usage();
-        return 1;
-    }
+    // // deactivate for debugging  
+    // if (argc != 5) {
+    //     print_usage();
+    //     return 1;
+    // }
 
     int arg_index = 1;
     int dimension = atoi(argv[arg_index++]);
     int N = atoi(argv[arg_index++]);
     int levels = atoi(argv[arg_index++]);
     int v = atoi(argv[arg_index++]);
+    int smoother = atoi(argv[arg_index++]);
 
     printf("\nArguments:\n");
     printf("Grid size, N = %d\n", N);
@@ -106,6 +121,12 @@ int main (int argc, char** argv){
     if (dimension != 1 && dimension != 2) {
         print_usage();
         printf("\n Input was dimension of %d \n", dimension);
+        return 1;
+    }
+    
+    if (use_stencil9 == 1 && dimension!=2) {
+        print_usage();
+        printf("\n Error: Flag for using 9 point stencil was enable but dimension was not 2 \n");
         return 1;
     }
 
@@ -135,21 +156,29 @@ int main (int argc, char** argv){
         double total_time = 0;
         for (int i = 0; i < 10; i++) {
             clock_t start_time = clock();
-            mg_solve(u, f, N, levels, v, dimension, fcycle, 0, &num_iterations, &final_error, &converged);
+
+            mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother, &num_iterations, &final_error, &converged);
+
             clock_t end_time = clock();
             total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
             rand_vec(u[levels-1], N, dimension);
             init_b(f[levels-1], N, dimension);
         }
-        avg_time_taken = total_time / 10;
-    } else if (measure_time) {
+        double avg_time_taken = total_time / 10;
+        printf("Average time taken by mg_solve (10 runs): %f seconds\n", avg_time_taken);
+    } 
+    else if (measure_time) {
         // Measure time for a single run of mg_solve
         clock_t start_time = clock();
-        mg_solve(u, f, N, levels, v, dimension, fcycle, 1, &num_iterations, &final_error, &converged);
+
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
+
         clock_t end_time = clock();
-        time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
-    } else {
-        mg_solve(u, f, N, levels, v, dimension, fcycle, 1, &num_iterations, &final_error, &converged);
+        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
+        printf("Time taken by mg_solve: %f seconds\n", time_taken);
+    } 
+    else {
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
     }
 
     printf("\nResults:\n");
