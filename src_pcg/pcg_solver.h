@@ -41,7 +41,7 @@ void pcg_solve(int N, double x[],  double b[],  int preconditioner, double epsil
     if (preconditioner==0){
         z=r;
     }
-    init_preconditioner(a,r,z,N,preconditioner);
+    init_preconditioner(a,r,z,N,preconditioner, 0);
 
     axpy(p,-1,z,0,(N+2)*(N+2)); // p = -r (first conjugated gradient direction)
 
@@ -65,7 +65,7 @@ void pcg_solve(int N, double x[],  double b[],  int preconditioner, double epsil
 
         
         // precondition r: z = M^-1*r
-        apply_precon(a,r,z,N,preconditioner);
+        apply_precon(a, r, z, N, preconditioner, 0);
 
         //update p
         new_r_dot = dot(r,z,N2);    // TB :need dot(r,z,N2) instaed of dot(r,r,N2)! 
