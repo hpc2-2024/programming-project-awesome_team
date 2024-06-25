@@ -1,3 +1,6 @@
+#ifndef PROLONGATION
+#define PROLONGATION
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,3 +69,4 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
     }
 }
 
+#endif

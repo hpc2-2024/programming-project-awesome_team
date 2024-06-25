@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "vcycle.h"
+#include "wcycle.h"
 #include "poisson_mat_vek.h"
 
 
@@ -52,7 +53,7 @@ void mg_solve(double** u, double **f, int N, int levels,int v, int dim, int use_
 
         // Perform a V-cycle to update the solution
         if (use_wcycle == 1) {
-            w_cycle(u, f, N, levels, v, dim, use_stencil9, debug);
+            w_cycle_rec(u, f, N, levels, v, dim, use_stencil9, debug);
         }
         else if (fcycle == 1) {
             f_cycle(u, f, N, levels, v, dim, use_stencil9, debug);

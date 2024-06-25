@@ -1,3 +1,6 @@
+#ifndef RESTRICTION
+#define RESTRICTION
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,3 +73,5 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
         }
     }
 }
+
+#endif
