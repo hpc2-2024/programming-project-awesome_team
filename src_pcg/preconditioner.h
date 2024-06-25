@@ -4,29 +4,31 @@
 #include "../src_mg/mg_preconditioner.h"
 
 void lapl_matrix(double** a, int N){
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     for (int i=0;i<N*N;i++) {
         //diagonal
-        a[i][2]=4;
+        a[i][2]=4.0/h2;
 
         if (i%N==0){
             a[i][1]=0;
         }
         else {
-            a[i][1]=-1;
+            a[i][1]=-1.0/h2;
         }
         if (i%N==N-1){
             a[i][3]=0;
         }
         else {
-            a[i][3]=-1;
+            a[i][3]=-1.0/h2;
         }
     }
     //outer -1 diagonals
     for (int i=N;i<N*N;i++){
-        a[i][0]=-1;
+        a[i][0]=-1.0/h2;
     }
     for (int i=0;i<N*N-N;i++){
-        a[i][4]=-1;
+        a[i][4]=-1.0/h2;
     }
     for (int i=0;i<N;i++){
         a[i][0]=0;
@@ -38,6 +40,8 @@ void lapl_matrix(double** a, int N){
 
 /*!iterative ilu for laplace matrix*/
 void ilu(double** a, int N,double epsilon,int max_it){
+    double h = 1.0/(N+1);
+    double h2 = h*h;
     int iteration_count = 0;
     while (iteration_count < max_it){
         iteration_count += 1;
@@ -45,13 +49,13 @@ void ilu(double** a, int N,double epsilon,int max_it){
         #pragma omp parallel for
         for (int i = 0;i<N*N;i++){
             if (i-N >= 0){
-                a[i][0]=-1/a[i-N][2];
+                a[i][0]=-1/(a[i-N][2]*h2);
             }
             // we have to skip some li's on the second diagonal
             if (i%N>0) {
-                a[i][1]=-1/a[i-1][2];
+                a[i][1]=-1/(a[i-1][2]*h2);
             }
-            a[i][2]=4+a[i][0]+a[i][1];
+            a[i][2]=a[i][2]+a[i][0]+a[i][1];
         }
 
     }
