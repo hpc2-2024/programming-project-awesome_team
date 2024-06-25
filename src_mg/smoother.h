@@ -61,7 +61,7 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
     free(u_new);
 }
 
-void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim){
+void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_stencil9){
     int N_pad = N + 2; 
     int X_size = get_vec_size(N, dim, 1); // (N+2) * (N+2)
     
@@ -70,21 +70,45 @@ void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim){
 
     // double *X_new;
     // X_new = malloc(X_size * sizeof(*X_new));
-
     int iter;
-    for (iter = 0; iter < v; iter++) {
+    if(use_stencil9 == 0){
+        for (iter = 0; iter < v; iter++) {
 
-        for (int i = 1; i < N_pad-1; i++){
-            for(int j = 1; j < N_pad; j++){
-                double sum = 0.0;
+            for (int i = 1; i < N_pad-1; i++){
+                for(int j = 1; j < N_pad; j++){
+                    double sum = 0.0;
+                    
+                    sum = - X[i * N_pad + (j+1)] 
+                        - X[i * N_pad + (j-1)] 
+                        - X[(i+1) * N_pad + j] 
+                        - X[(i-1) * N_pad + j];
+                    
+                    sum = sum / h2;
+                    X[i * N_pad + j] = (B[i * N_pad + j] - sum) / (4 / h2);
+                }
+            }
+        }
+    }
+    else{
+        for (iter = 0; iter < v; iter++) {
 
-                sum = - X[i * N_pad + (j+1)] 
-                      - X[i * N_pad + (j-1)] 
-                      - X[(i+1) * N_pad + j] 
-                      - X[(i-1) * N_pad + j];
-                
-                sum = sum / h2;
-                X[i * N_pad + j] = (B[i * N_pad + j] - sum) / (4 / h2);
+            for (int i = 1; i < N_pad-1; i++){
+                for(int j = 1; j < N_pad; j++){
+                    double sum = 0.0;
+                    
+                    sum =   -0.5*X[N_pad*i+j-1] 
+                            -0.5*X[N_pad*i+j+1] 
+                            -0.5*X[N_pad*(i+1)+j]
+                            -0.5*X[(N+2)*(i-1)+j]
+                            -0.25*X[N_pad*(i+1)+j+1] 
+                            -0.25*X[N_pad*(i+1)+j-1]  
+                            -0.25*X[N_pad*(i-1)+j+1] 
+                            -0.25*X[N_pad*(i-1)+j-1];
+                    
+                    sum = sum / (h2 * 6.0);
+
+                    X[i * N_pad + j] = (B[i * N_pad + j] - sum) / (3 / (h2 * 6.0));
+                }
             }
         }
     }
@@ -109,7 +133,7 @@ void smooth(double u[], double f[], int N, int v,int dim, int use_stencil9, int 
         smooth_jacobi(u, f, N, v, dim, use_stencil9);
     }
     else if(smoother == 1){
-        smooth_gauss_seidel(u, f, N, v, dim);
+        smooth_gauss_seidel(u, f, N, v, dim, use_stencil9);
     }
 }
 
