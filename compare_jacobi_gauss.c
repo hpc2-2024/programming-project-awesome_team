@@ -131,12 +131,16 @@ int main (int argc, char** argv){
 
     rand_vec(u[levels-1], N, dimension);
     init_b(f[levels-1], N, dimension);
+   
+    int num_iterations = 0;
+    double final_error = 0.0;
+    int converged = 0;
 
     double total_time = 0;
     for (int i = 0; i < iter; i++) {
         clock_t start_time = clock();
 
-        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother, &num_iterations, &final_error, &converged);
 
         clock_t end_time = clock();
         total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
@@ -157,7 +161,7 @@ int main (int argc, char** argv){
     for (int i = 0; i < iter; i++) {
         clock_t start_time = clock();
 
-        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother);
+        mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 0, smoother, &num_iterations, &final_error, &converged);
 
         clock_t end_time = clock();
         total_time += (double)(end_time - start_time) / (10 * CLOCKS_PER_SEC);
