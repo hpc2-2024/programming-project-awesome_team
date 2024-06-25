@@ -252,19 +252,19 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compare the runtime of the Multi-Grid method when using the Jacobi smoother against the Gauss-Seidel smoother. </p>
-<dl class="section note"><dt>Note</dt><dd>Usage: ./mg &lt;dimension&gt; &lt;gridsize N&gt; &lt;levels&gt; &lt;smoothing steps&gt; &lt;iter&gt; </dd>
+<dl class="section note"><dt>Note</dt><dd>Usage: ./mg &lt;dimension&gt; &lt;gridsize&gt; &lt;levels&gt; &lt;smoothing steps&gt; &lt;iterations&gt; </dd>
 <dd>
-Example: ./mg 2 19 2 2 10 </dd>
+Example: ./mg 2 19 2 2 10 to average the times over 10 runs for a grid of size 19^dimensions, using 2 levels and 2 smoothing steps. </dd>
 <dd>
 Note: The dimension must be 1 or 2. </dd>
 <dd>
 Optional flags: </dd>
 <dd>
--fopenmp: use this flag for shared memory parallelization, run "export OMP_NUM_THREADS=...\" before using to set the number of threads on your machine. </dd>
+-fopenmp : use this flag for shared memory parallelization, run "export OMP_NUM_THREADS=...\" before using to set the number of threads on your machine. </dd>
 <dd>
--fcycle: with this flag the multigrid method uses fcycle instead of vcycle </dd>
+-fcycle : with this flag the multigrid method uses fcycle instead of vcycle </dd>
 <dd>
--stencil9: uses the 9-point stencil, only works if dimension=2 </dd></dl>
+-stencil9 : uses the 9-point stencil, only works if dimension=2 </dd></dl>
 
 </div>
 </div>

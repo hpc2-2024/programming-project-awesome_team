@@ -114,6 +114,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ae5ad5cbeccaedc03a48d3c7eaa803e79" id="r_ae5ad5cbeccaedc03a48d3c7eaa803e79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae5ad5cbeccaedc03a48d3c7eaa803e79">print_usage</a> ()</td></tr>
 <tr class="separator:ae5ad5cbeccaedc03a48d3c7eaa803e79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a583321d65cb033d14c272560d16d9ea5" id="r_a583321d65cb033d14c272560d16d9ea5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a583321d65cb033d14c272560d16d9ea5">is_valid_input</a> (int N, int levels)</td></tr>
+<tr class="memdesc:a583321d65cb033d14c272560d16d9ea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run the Multi-Grid method with various parameters to solve a system of linear equations.  <br /></td></tr>
 <tr class="separator:a583321d65cb033d14c272560d16d9ea5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af641adc494e8f054ce0d00e2910be8e1" id="r_af641adc494e8f054ce0d00e2910be8e1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af641adc494e8f054ce0d00e2910be8e1">fun</a> (double x, double y)</td></tr>
 <tr class="separator:af641adc494e8f054ce0d00e2910be8e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -212,6 +213,27 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Run the Multi-Grid method with various parameters to solve a system of linear equations. </p>
+<dl class="section note"><dt>Note</dt><dd>Usage: ./mg &lt;dimension&gt; &lt;gridsize&gt; &lt;levels&gt; &lt;smoothing steps&gt; &lt;smoother&gt; </dd>
+<dd>
+Example: ./mg 2 19 2 2 10 </dd>
+<dd>
+Note: The dimension must be 1 or 2. </dd>
+<dd>
+Note: Setting &lt;smoother&gt; to 0 selects Jacobi, setting it to 1 selects Gauss-Seidel. </dd>
+<dd>
+Optional flags: </dd>
+<dd>
+-fopenmp : use this flag for shared memory parallelization, run "export OMP_NUM_THREADS=...\" before using to set the number of threads on your machine. </dd>
+<dd>
+-fcycle : with this flag the multigrid method uses fcycle instead of vcycle </dd>
+<dd>
+-time : with this flag, perform a single Multi-Grid run and output the time. </dd>
+<dd>
+-avg_time : with this flag, perform multiple Multi-Grid runs and output their average time. </dd>
+<dd>
+-stencil9 : whith this flag, the algorithm uses the 9-point stencil (only works if dimension=2) </dd></dl>
 
 </div>
 </div>

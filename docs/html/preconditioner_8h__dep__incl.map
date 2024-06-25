@@ -1,8 +1,0 @@
-<map id="src_pcg/preconditioner.h" name="src_pcg/preconditioner.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,185,33"/>
-<area shape="rect" id="Node000002" href="$pcg_8c.html" title=" " alt="" coords="67,157,123,184"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,48,66,82,63,95,66,108,75,133,88,155,83,157,71,136,60,109,58,95,60,80,75,46"/>
-<area shape="rect" id="Node000003" href="$pcg__solver_8h.html" title=" " alt="" coords="75,81,230,109"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="117,44,144,79,140,82,112,47"/>
-<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="135,123,107,158,103,155,131,119"/>
-</map>

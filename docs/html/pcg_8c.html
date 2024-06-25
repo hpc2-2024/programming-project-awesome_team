@@ -118,6 +118,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ae5ad5cbeccaedc03a48d3c7eaa803e79" id="r_ae5ad5cbeccaedc03a48d3c7eaa803e79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae5ad5cbeccaedc03a48d3c7eaa803e79">print_usage</a> ()</td></tr>
 <tr class="separator:ae5ad5cbeccaedc03a48d3c7eaa803e79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af641adc494e8f054ce0d00e2910be8e1" id="r_af641adc494e8f054ce0d00e2910be8e1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af641adc494e8f054ce0d00e2910be8e1">fun</a> (double x, double y)</td></tr>
+<tr class="memdesc:af641adc494e8f054ce0d00e2910be8e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve a linear system using the preconditioned Conjugate Gradients method.  <br /></td></tr>
 <tr class="separator:af641adc494e8f054ce0d00e2910be8e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aabb297410de19935cea0a80e629ad7a6" id="r_aabb297410de19935cea0a80e629ad7a6"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aabb297410de19935cea0a80e629ad7a6">fun_solution</a> (double x, double y)</td></tr>
 <tr class="separator:aabb297410de19935cea0a80e629ad7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,6 +169,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Solve a linear system using the preconditioned Conjugate Gradients method. </p>
+<dl class="section note"><dt>Note</dt><dd>Usage: ./pcg &lt;gridsize&gt; &lt;preconditioner&gt; </dd>
+<dd>
+Example: ./pcg 63 4 </dd>
+<dd>
+Note: set &lt;preconditioner&gt; to one of the following values to select different preconditioning methods: 1 = ILU, 2 = Jacobi, 3 = Gauss-Seidel, 4 = Multi-Grid </dd>
+<dd>
+Optional flags: </dd>
+<dd>
+-time : with this flag, perform a single PCG run and output the time.</dd></dl>
 <p>The function f of the exercise sheet </p>
 
 </div>
