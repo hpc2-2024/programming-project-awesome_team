@@ -86,11 +86,11 @@ int main (int argc, char** argv){
         }
     }
 
-    // // deactivate for debugging  
-    // if (argc != 5) {
-    //     print_usage();
-    //     return 1;
-    // }
+    // deactivate for debugging  
+    if (argc != 6) {
+        print_usage();
+        return 1;
+    }
 
     int arg_index = 1;
     dimension = atoi(argv[arg_index++]);
