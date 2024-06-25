@@ -163,7 +163,7 @@ int main (int argc, char** argv){
             rand_vec(u[levels-1], N, dimension);
             init_b(f[levels-1], N, dimension);
         }
-        double avg_time_taken = total_time / 10;
+        avg_time_taken = total_time / 10;
     } 
     else if (measure_time) {
         // Measure time for a single run of mg_solve
@@ -172,7 +172,7 @@ int main (int argc, char** argv){
         mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
 
         clock_t end_time = clock();
-        double time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
+        time_taken = (double)(end_time - start_time) / (10* CLOCKS_PER_SEC); // Clocks_per_sec should not be multiplied by 10, but for my computer it does for some reason
     } 
     else {
         mg_solve(u, f, N, levels, v, dimension, fcycle, use_stencil9, 1, smoother, &num_iterations, &final_error, &converged);
