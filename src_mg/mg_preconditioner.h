@@ -34,7 +34,7 @@ void mg_precon(double* z, double* r, int N_start, int smoother){
     int dimension = 2;
     int N = N_start;
     int vec_size = get_vec_size(N, dimension,1);
-    int v = 3; // smoothing steps
+    int v = 5; // smoothing steps
     int use_stencil9 = 0;
     int debug = 0;
     
