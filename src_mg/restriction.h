@@ -74,11 +74,64 @@ void restriction_half(double *fine_grid, int M, double *coarse_grid, int N,int d
     }
 }
 
+int conv_3d(int N, int x, int y, int z){
+    int N_pad = N+2;
+    int N_pad2 = N_pad*N_pad;
+    return N_pad2*x+N_pad*y+z;
+}
+
 void restriction_full(double *fine_grid, int M, double *coarse_grid, int N,int dim){
     int M_pad = M+2;
     int N_pad = N+2;
 
-    if (dim==2) {
+    if (dim==3){
+        #pragma omp parallel for
+        for(int i = 1; i<N_pad-1; i++){
+            for(int j = 1; j<N_pad-1; j++){
+                for (int k = 1; k<N_pad-1; k++){
+
+                int a = 2*i;
+                int b = 2*j;
+                int c = 2*k;
+
+                coarse_grid[i * N_pad + j] = 
+                    ( 
+                    2 * fine_grid[conv_3d(M, i-1,j-1,k-1)]
+                    + 2 * fine_grid[conv_3d(M,i,j-1,k-1)]
+                    + 2 * fine_grid[conv_3d(M,i+1,j-1,k-1)] 
+                    + 2 * fine_grid[conv_3d(M,i-1,j,k-1)] 
+                    + 4 * fine_grid[conv_3d(M,i,j,k-1)]
+                    + fine_grid[conv_3d(M,i+1,j,k-1)]
+                    + fine_grid[conv_3d(M,i-1,j+1,k-1)]
+                    + fine_grid[conv_3d(M,i,j+1,k-1)]
+                    + fine_grid[conv_3d(M,i+1,j+1,k-1)]
+
+                    + 2 * fine_grid[conv_3d(M,i-1,j-1,k)]
+                    + 2 * fine_grid[conv_3d(M,i,j-1,k)]
+                    + 2 * fine_grid[conv_3d(M,i+1,j-1,k)] 
+                    + 2 * fine_grid[conv_3d(M,i-1,j,k)] 
+                    + 4 * fine_grid[conv_3d(M,i,j,k)]
+                    + fine_grid[conv_3d(M,i+1,j,k)]
+                    + fine_grid[conv_3d(M,i-1,j+1,k)]
+                    + fine_grid[conv_3d(M,i,j+1,k)]
+                    + fine_grid[conv_3d(M,i+1,j+1,k)]
+
+                    + 2 * fine_grid[conv_3d(M,i-1,j-1,k+1)]
+                    + 2 * fine_grid[conv_3d(M,i,j-1,k+1)]
+                    + 2 * fine_grid[conv_3d(M,i+1,j-1,k+1)] 
+                    + 2 * fine_grid[conv_3d(M,i-1,j,k+1)] 
+                    + 4 * fine_grid[conv_3d(M,i,j,k+1)]
+                    + fine_grid[conv_3d(M,i+1,j,k+1)]
+                    + fine_grid[conv_3d(M,i-1,j+1,k+1)]
+                    + fine_grid[conv_3d(M,i,j+1,k+1)]
+                    + fine_grid[conv_3d(M,i+1,j+1,k+1)]
+                    )/64.0;
+                }
+
+            }
+        }
+    }
+    else if (dim==2) {
         #pragma omp parallel for
         for(int i = 1; i<N_pad-1; i++){
             for(int j = 1; j<N_pad-1; j++){
