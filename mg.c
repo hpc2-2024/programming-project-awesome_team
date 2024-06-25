@@ -44,12 +44,20 @@ double fun_solution(double x, double y){
 void init_b(double b[],int N, int dim){
     double h = 1.0/(N+1);
     double h2 = h * h;
+    int N_pad = N+2;
     // inner points of x_0,b
     for (int i = 1;i<N+1;i++) {
         if (dim==2) {
             for (int j = 1;j<N+1;j++){
                 b[(N+2)*i+j]=fun(i*h,j*h); 
             }
+        }
+        else if (dim==3) {
+            for (int j = 1; j<N+1; j++) {
+                    for (int k=1; k<N+1;k++){
+                        b[i*N_pad*N_pad + j*N_pad + k]=1.0;
+                    }
+                }
         }
         else {
             b[i]=1.0;  
@@ -130,7 +138,7 @@ int main (int argc, char** argv){
     printf("F-cycle used: %s\n", fcycle ? "yes" : "no");
     printf("Stencil9 used: %s\n\n", use_stencil9 ? "yes" : "no");
 
-    if (dimension != 1 && dimension != 2) {
+    if (dimension != 1 && dimension != 2 && dimension!=3) {
         print_usage();
         printf("\n Input was dimension of %d \n", dimension);
         return 1;

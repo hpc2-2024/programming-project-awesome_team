@@ -75,10 +75,21 @@ void null_vec(double array[], int arrSize){
  * @param dim Dimension of the vector (1 or 2).
  */
 void rand_vec(double x[], int N, int dim){
+    int N_pad = N+2;
     int seed = 123456;
     for (int i = 1;i<N+1;i++) {
 
-        if (dim==2) {
+        if (dim==3){
+            for (int j = 1;j<N+1;j++){
+                for (int k=1; k<N+1; k++) {
+                    // randomly initialize x with values in (0,1)
+                    srand(seed + i);
+                    double r = (double)rand() / (double)RAND_MAX;
+                    x[N_pad*N_pad*i+j*N_pad +k]=r;
+                }
+            }
+        }
+        else if (dim==2) {
             for (int j = 1;j<N+1;j++){
                 // randomly initialize x with values in (0,1)
                 srand(seed + i);
