@@ -22,7 +22,64 @@ void prolongation_simple(double *coarse_grid, int N, double* fine_grid, int M,in
     int N_pad = N + 2;
     int M_pad = M + 2;
 
-    if (dim==2) {
+    if (dim == 3) {
+    // only iterate over the inner points and interpolate them from the coarse grid
+        #pragma omp parallel for
+        for (int i = 1; i < M_pad - 1; i++) {
+            for (int j = 1; j < M_pad - 1; j++) {
+                for (int k = 1; k < M_pad - 1; k++) {
+                    int l = (i + 1) / 2;
+                    int m = (j + 1) / 2;
+                    int n = (k + 1) / 2;
+
+                    if (i % 2 == 0 && j % 2 == 0 && k % 2 == 0) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = coarse_grid[l * N_pad * N_pad + m * N_pad + n];
+                    } else if (i % 2 == 0 && j % 2 == 0 && k % 2 == 1) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.5 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.5 * coarse_grid[l * N_pad * N_pad + m * N_pad + (n-1)];
+                    } else if (i % 2 == 0 && j % 2 == 1 && k % 2 == 0) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.5 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.5 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + n];
+                    } else if (i % 2 == 1 && j % 2 == 0 && k % 2 == 0) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.5 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.5 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + n];
+                    } else if (i % 2 == 0 && j % 2 == 1 && k % 2 == 1) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.25 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.25 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + n] +
+                            0.25 * coarse_grid[l * N_pad * N_pad + m * N_pad + (n-1)] + 
+                            0.25 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + (n-1)];
+                    } else if (i % 2 == 1 && j % 2 == 0 && k % 2 == 1) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.25 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.25 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + n] +
+                            0.25 * coarse_grid[l * N_pad * N_pad + m * N_pad + (n-1)] + 
+                            0.25 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + (n-1)];
+                    } else if (i % 2 == 1 && j % 2 == 1 && k % 2 == 0) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.25 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.25 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + n] +
+                            0.25 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + n] + 
+                            0.25 * coarse_grid[(l-1) * N_pad * N_pad + (m-1) * N_pad + n];
+                    } else if (i % 2 == 1 && j % 2 == 1 && k % 2 == 1) {
+                        fine_grid[i * M_pad * M_pad + j * M_pad + k] = 
+                            0.125 * coarse_grid[l * N_pad * N_pad + m * N_pad + n] + 
+                            0.125 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + n] +
+                            0.125 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + n] + 
+                            0.125 * coarse_grid[l * N_pad * N_pad + m * N_pad + (n-1)] +
+                            0.125 * coarse_grid[(l-1) * N_pad * N_pad + (m-1) * N_pad + n] + 
+                            0.125 * coarse_grid[(l-1) * N_pad * N_pad + m * N_pad + (n-1)] +
+                            0.125 * coarse_grid[l * N_pad * N_pad + (m-1) * N_pad + (n-1)] + 
+                            0.125 * coarse_grid[(l-1) * N_pad * N_pad + (m-1) * N_pad + (n-1)];
+                    }
+                }
+            }
+        }
+    }
+    else if (dim==2) {
         // only iterate over the inner points and interpolate them from the coarse grid
         #pragma omp parallel for
         for(int i = 1; i<M_pad-1; i++){
