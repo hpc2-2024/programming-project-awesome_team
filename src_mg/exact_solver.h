@@ -54,6 +54,77 @@ void gaussian_elimination(double A[], double b[], double x[], int n) {
     }
 }
 
+void exact_solve_poisson_3D(double u[], double f[], int N) {
+    int i, j, k, idx;
+    double h = 1.0 / (N + 1);
+    double h2 = h * h;
+    int NNN = N * N * N;
+
+    // Create matrix A (NNN x NNN) and vector b (NNN)
+    double *A = (double *)malloc(NNN * NNN * sizeof(double));
+    double *b = (double *)malloc(NNN * sizeof(double));
+    double *temp_u = (double *)malloc(NNN * sizeof(double)); // Temporary array for solution
+    
+    // Initialize A to be the Laplacian matrix and b to be the right-hand side vector
+    for (i = 0; i < NNN; i++) {
+        b[i] = 0.0;
+        for (j = 0; j < NNN; j++) {
+            A[i * NNN + j] = 0.0;
+        }
+    }
+
+    // Fill matrix A with the 7-point stencil
+    for (i = 1; i <= N; i++) {
+        for (j = 1; j <= N; j++) {
+            for (k = 1; k <= N; k++) {
+                idx = (i - 1) * N * N + (j - 1) * N + (k - 1);
+                b[idx] = f[i * (N + 2) * (N + 2) + j * (N + 2) + k];
+
+                // Diagonal element
+                A[idx * NNN + idx] = 6.0 / h2;
+
+                // 7-point stencil elements
+                if (i > 1) {
+                    A[idx * NNN + (idx - N * N)] = -1.0 / h2; // left
+                }
+                if (i < N) {
+                    A[idx * NNN + (idx + N * N)] = -1.0 / h2; // right
+                }
+                if (j > 1) {
+                    A[idx * NNN + (idx - N)] = -1.0 / h2; // down
+                }
+                if (j < N) {
+                    A[idx * NNN + (idx + N)] = -1.0 / h2; // up
+                }
+                if (k > 1) {
+                    A[idx * NNN + (idx - 1)] = -1.0 / h2; // back
+                }
+                if (k < N) {
+                    A[idx * NNN + (idx + 1)] = -1.0 / h2; // front
+                }
+            }
+        }
+    }
+
+    // Solve the system using Gaussian elimination
+    gaussian_elimination(A, b, temp_u, NNN);
+
+    // Map the solution back to the u array with ghost layers
+    for (i = 1; i <= N; i++) {
+        for (j = 1; j <= N; j++) {
+            for (k = 1; k <= N; k++) {
+                idx = (i - 1) * N * N + (j - 1) * N + (k - 1);
+                u[i * (N + 2) * (N + 2) + j * (N + 2) + k] = temp_u[idx];
+            }
+        }
+    }
+
+    // Free allocated memory
+    free(A);
+    free(b);
+    free(temp_u);
+}
+
 /**
  * @brief Solves the 2D Poisson equation using Gaussian elimination.
  *
@@ -213,7 +284,10 @@ void exact_solve_poisson_1D(double u[], double f[], int N){
  * @param use_stencil9  Flag for enabling 9 point stencil in the 2d case (0 or 1).
  */
 void exact_solve(double u[], double f[], int N, int dim, int use_stencil9){
-    if (dim==2){
+    if (dim==3) {
+        exact_solve_poisson_3D(u,f,N);
+    }
+    else if (dim==2){
         exact_solve_poisson_2D(u,f,N, use_stencil9);
     }
     else if (dim==1){

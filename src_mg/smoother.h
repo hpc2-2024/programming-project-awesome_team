@@ -37,7 +37,7 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
         if (dim==3) {
             poisson_mat_vek(dim,N,u,u_new, 0);
             axpy(u_new,-1,u_new,f,vec_size);
-            axpy(u_new,0.6/6*h*h,u_new,u,vec_size);
+            axpy(u_new,0.99/6*h*h,u_new,u,vec_size);
         }
         else if (dim==2) {
             if (use_stencil9 == 1) {
@@ -66,17 +66,15 @@ void smooth_jacobi(double u[], double f[], int N, int v, int dim, int use_stenci
     free(u_new);
 }
 
-void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_stencil9){
-    int N_pad = N + 2; 
-    int X_size = get_vec_size(N, dim, 1); // (N+2) * (N+2)
-    
-    double h = 1.0/(N+1);
-    double h2 = h*h;
-
-    // double *X_new;
-    // X_new = malloc(X_size * sizeof(*X_new));
+void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_stencil9) {
+    int N_pad = N + 2;
+    int N_pad2 = N_pad * N_pad;
+    double h = 1.0 / (N + 1);
+    double h2 = h * h;
     int iter;
-    if(use_stencil9 == 0){
+
+    if (dim == 2) {
+        if(use_stencil9 == 0){
         for (iter = 0; iter < v; iter++) {
 
             for (int i = 1; i < N_pad-1; i++){
@@ -116,6 +114,31 @@ void smooth_gauss_seidel(double *X, double *B, int N, int v, int dim, int use_st
                 }
             }
         }
+    }
+    } else if (dim == 3) {
+        for (iter = 0; iter < v; iter++) {
+            #pragma omp parallel for collapse(3)
+            for (int i = 1; i < N_pad - 1; i++) {
+                for (int j = 1; j < N_pad - 1; j++) {
+                    for (int k = 1; k < N_pad - 1; k++) {
+                        double sum = 0.0;
+
+                        sum = -X[N_pad2 * (i - 1) + N_pad * j + k]     // left
+                              -X[N_pad2 * (i + 1) + N_pad * j + k]     // right
+                              -X[N_pad2 * i + N_pad * (j - 1) + k]     // down
+                              -X[N_pad2 * i + N_pad * (j + 1) + k]     // up
+                              -X[N_pad2 * i + N_pad * j + (k - 1)]     // back
+                              -X[N_pad2 * i + N_pad * j + (k + 1)];    // front
+
+                        sum = sum / h2;
+                        X[N_pad2 * i + N_pad * j + k] = (B[N_pad2 * i + N_pad * j + k] - sum) / (6.0 / h2);
+                    }
+                }
+            }
+        }
+    } else {
+        fprintf(stderr, "Unsupported dimension: %d\n", dim);
+        exit(EXIT_FAILURE);
     }
 }
 
