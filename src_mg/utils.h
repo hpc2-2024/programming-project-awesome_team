@@ -83,7 +83,7 @@ void rand_vec(double x[], int N, int dim){
             for (int j = 1;j<N+1;j++){
                 for (int k=1; k<N+1; k++) {
                     // randomly initialize x with values in (0,1)
-                    srand(seed + i);
+                    srand(seed + i+j+k);
                     double r = (double)rand() / (double)RAND_MAX;
                     x[N_pad*N_pad*i+j*N_pad +k]=r;
                 }
@@ -92,7 +92,7 @@ void rand_vec(double x[], int N, int dim){
         else if (dim==2) {
             for (int j = 1;j<N+1;j++){
                 // randomly initialize x with values in (0,1)
-                srand(seed + i);
+                srand(seed + i+j);
                 double r = (double)rand() / (double)RAND_MAX;
                 x[(N+2)*i+j]=r;
             }
@@ -218,7 +218,6 @@ void print_vector(double arr[], int N, int dimension, int ghostlayer, char name[
             for (int j=0;j<n;j++){
                 printf("%f ",arr[i*n+j]);
             }
-            printf("\n");
         }
         else if (dimension == 1) {
             printf("%f \n", arr[i]);
@@ -235,6 +234,7 @@ void print_vector(double arr[], int N, int dimension, int ghostlayer, char name[
 
         printf("\n");
     }
+    printf("\n");
 }
 
 /*! Displaying a vector with ghostlayer*/
