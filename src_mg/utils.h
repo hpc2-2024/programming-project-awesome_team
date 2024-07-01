@@ -215,13 +215,22 @@ void print_vector(double arr[], int N, int dimension, int ghostlayer, char name[
     printf("\n %s \n",name);
     for (int i=0; i<n; i++) {
         if (dimension == 2) {
-            for (int j=0;j<N+2;j++){
+            for (int j=0;j<n;j++){
                 printf("%f ",arr[i*n+j]);
             }
             printf("\n");
         }
         else if (dimension == 1) {
             printf("%f \n", arr[i]);
+        }
+        else if (dimension == 3) {
+            for (int j=0; j<n; j++) {
+                for (int k=0; k<n; k++){
+                    printf("%f ", arr[i*n*n+j*n+k]);
+                }
+                printf("\n");
+            }
+            printf("\n");
         }
 
         printf("\n");
