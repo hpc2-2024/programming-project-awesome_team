@@ -6,3 +6,5 @@ pcg
 .vscode/
 *.pdf
 *.json
+*.sh
+# scripts/
